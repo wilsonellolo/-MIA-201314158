@@ -1,0 +1,15 @@
+# depslib dependency file v1.0
+1470271615 source:/home/wilson/github MIA/MIA201314158/[MIA]201314158/main.c
+	<stdio.h>
+	<stdlib.h>
+	<sys/stat.h>
+	<string.h>
+	"stdio.h"
+	<time.h>
+	"exec.h"
+
+1470260755 source:/home/wilson/github MIA/MIA201314158/[MIA]201314158/exec.c
+
+1470261935 /home/wilson/github MIA/MIA201314158/[MIA]201314158/exec.h
+	<stdio.h>
+
