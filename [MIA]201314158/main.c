@@ -9,6 +9,33 @@
 
 //STRUCTS
 typedef struct{
+    char path[200];
+    char id[10];
+    char name[100];
+    struct registro *siguiente;
+    struct registro *anterior;
+}registro;
+
+typedef struct{
+    registro *primero;
+    registro *ultimo;
+    int tam;
+}tabla;
+tabla *re;
+typedef struct{
+    int numero;
+    struct nodolista *siguiente;
+    struct nodolista *anterior;
+}nodolista;
+
+typedef struct{
+   nodolista *primero;
+   nodolista *ultimo;
+    int tam;
+}lista;
+lista* listanumeros;
+
+typedef struct{
     int  part_status;
     char part_type[100];
     char part_fit[100];
@@ -56,6 +83,23 @@ Pares: 201212838@ingenieria.usac.edu.gt e Impares: Georgina.estrada78@gmail.com
 */
 int main()
 {
+
+//INICIAR TODAS LAS ESTRUCTURAS
+    re = (tabla *)malloc(sizeof(tabla));
+    re->primero = (registro *)malloc(sizeof(registro));
+    re->ultimo = (registro *)malloc(sizeof(registro));
+    re->primero = NULL;
+    re->ultimo = NULL;
+    re->tam=0;
+
+    listanumeros =(lista*)malloc(sizeof(lista));
+    listanumeros->primero =(lista*)malloc(sizeof(lista));
+    listanumeros->ultimo =(lista*)malloc(sizeof(lista));
+    listanumeros->primero=NULL;
+    listanumeros->ultimo=NULL;
+    listanumeros->tam=0;
+
+//FINN INICAR LAS ESTRUCTURAS
     char cadena[300];
 
 
@@ -74,9 +118,6 @@ int main()
 
   return 0;
 }
-
-
-
 
 //METODOS FASE 1
 
@@ -132,22 +173,25 @@ if(strstr(cadena,"#")){
         else if(strcmp(token,"rmdisk")==0){
             rmdisk(token);
         }
-       /* else if(strcmp(token,"fdisk")==0){
-            fdisk();
+        else if(strcmp(token,"fdisk")==0){
+            fdisk(token);
         }
         else if(strcmp(token,"mount")==0){
-            mount();
+
+            mount(token);
+
         }
         else if(strcmp(token,"umount")==0){
-            umount();
+            umount(token);
         }
-        else if(strcmp(token,"rep")==0){
+    /*    else if(strcmp(token,"rep")==0){
             rep();
         }*/
         else if(strcmp(token,"exec")==0){
-            exec(token);
-        } else if(strcmp(cadena,"\n")==0){ return 8;}
 
+            exec(token);
+
+        } else if(strcmp(cadena,"\n")==0){ return 8;}
         return 0;
 }
 
@@ -170,7 +214,7 @@ int exec (char *token){
      FILE *file1;
 
     char *c1;
-    char cadena[100]="";
+    char cadena[200]="";
 
 
     file1=fopen(path,"r");
@@ -181,17 +225,19 @@ int exec (char *token){
     }
 
     while(c1=fgets(cadena,200,file1)){
+    if(strstr(cadena,"-")||strstr(cadena,"m")||strstr(cadena,"i")||strstr(cadena,"u")||strstr(cadena,"s")||strstr(cadena,"+")||strstr(cadena,"f")){}
+    else{break;}
        printf("%s\n",cadena);
        char *quitarsalto=strtok(cadena,"\n\t");
         strcpy(cadena,quitarsalto);
-       leerComandos(cadena);
-    }
 
+       leerComandos(cadena);
+
+    }
        fclose(file1);
 
 return 0;
 }
-
 int mkdisk(char*token){
 
 char size[20]="-size";
@@ -397,7 +443,6 @@ return 1;
 
 
 }
-
 int rmdisk(char *token){
     token = strtok(NULL," :");
 char* path[200];
@@ -450,7 +495,6 @@ if(ArchivoBorrar){
 return 1;
 
 }
-
 int fdisk(char *token){
 
     int    op = 0;
@@ -508,7 +552,7 @@ int fdisk(char *token){
     strcpy(unit1,"k");
     strcpy(type1,"p");
 
-
+        printf("\nponiendo token %s\n",token);
     //SE ANALIZA LA CADENA A EJECUTAR
      while(token !=NULL){
         token=strtok(NULL," :");
@@ -521,6 +565,7 @@ int fdisk(char *token){
         if(strstr(token,"+delete"))  op=6;
         if(strstr(token,"-name"))    op=7;
         if(strstr(token,"+add"))     op=8;
+        printf("\nponiendo token Q%sQ ---- %d\n",token, op);
      switch(op){
       case 1:
         token=strtok(NULL," :");
@@ -687,22 +732,21 @@ int fdisk(char *token){
 
     //SI SE CREA UNA NUEVA PARTICION
     if(size1>0){
+    //VEROFOCANDO QUE EL NOMBRE NO EXISTA AUN
     if(strcmp(mbraux->mbr_partition1.part_name,name1)==0 && strcmp(mbraux->mbr_partition2.part_name,name1)==0 && strcmp(mbraux->mbr_partition3.part_name,name1)==0 && strcmp(mbraux->mbr_partition4.part_name,name1)==0){
           printf("/nnombre de particion ya existe/n");
           return -1;
        }
-
+        //SI PARTICION UNO ESTA VACIA
       if(mbr01->mbr_partition1.part_size==0){
 
         int inicio=0;
-
-
         inicio=IniciarParticion(mbraux->mbr_partition2.part_start,mbraux->mbr_partition2.part_size,mbraux->mbr_partition3.part_start,mbraux->mbr_partition3.part_size,mbraux->mbr_partition4.part_start,mbraux->mbr_partition4.part_size,size1,mbraux->mbr_tamanio);
 
         if(inicio<0){
+        printf("\nParticion demasiado grande\n");
         return -1;
         }
-
 
 
     strcpy(mbr01->mbr_partition1.part_fit,fit1);
@@ -711,6 +755,7 @@ int fdisk(char *token){
     mbr01->mbr_partition1.part_size    =size1;
     mbr01->mbr_partition1.part_start   =inicio;
     mbr01->mbr_partition1.part_status  =1;
+
 
     FILE *partc11 =fopen(path1,"rb+");
     fseek(partc11,0,SEEK_SET);
@@ -737,18 +782,685 @@ int fdisk(char *token){
 
     }
 
+   }
 
 
+         //SI PARTICION DOS ESTA VACIA
+        else   if(mbr01->mbr_partition2.part_size==0){
+
+        int inicio=0;
+        inicio=IniciarParticion(mbraux->mbr_partition1.part_start,mbraux->mbr_partition1.part_size,mbraux->mbr_partition3.part_start,mbraux->mbr_partition3.part_size,mbraux->mbr_partition4.part_start,mbraux->mbr_partition4.part_size,size1,mbraux->mbr_tamanio);
+
+        if(inicio<0){
+        printf("\nParticion demasiado grande\n");
+        return -1;
+        }
+
+        strcpy(mbr01->mbr_partition2.part_fit,fit1);
+        strcpy(mbr01->mbr_partition2.part_name,name1);
+        strcpy(mbr01->mbr_partition2.part_type,type1);
+        mbr01->mbr_partition2.part_size    =size1;
+        mbr01->mbr_partition2.part_start   =inicio;
+        mbr01->mbr_partition2.part_status  =1;
+
+    FILE *partc11 =fopen(path1,"rb+");
+    fseek(partc11,0,SEEK_SET);
+    fwrite(mbr01,sizeof(mbr),1,partc11);
+    fclose(partc11);
+
+    if(strcmp(type1,"e")==0){
+        ebr *ebr1 =(ebr*)malloc(sizeof(ebr));
+        ebr1->part_status=1;
+        FILE* amigo=fopen(path1,"rb+");
+        fseek(amigo,0,SEEK_SET);
+        mbr* auxiliar=(mbr*)malloc(sizeof(mbr));
+        fread(auxiliar,sizeof(mbr),1,amigo);
+        fseek(amigo,inicio,SEEK_CUR);
+        strcpy(ebr1->part_fit,"");
+        ebr1->part_status=0;
+        ebr1->part_start=-1;
+        ebr1->part_size=0;
+        ebr1->part_next=-1;
+        strcpy(ebr1->part_name,"");
+        fwrite(ebr1,sizeof(ebr),1,amigo);
+
+        fclose(amigo);
+
+    }
+
+   }
+
+        //SI PARTICION TRES ESTA VACIA
+        else if(mbr01->mbr_partition3.part_size==0){
+
+        int inicio=0;
+        inicio=IniciarParticion(mbraux->mbr_partition1.part_start,mbraux->mbr_partition1.part_size,mbraux->mbr_partition2.part_start,mbraux->mbr_partition2.part_size,mbraux->mbr_partition4.part_start,mbraux->mbr_partition4.part_size,size1,mbraux->mbr_tamanio);
+
+        if(inicio<0){
+        printf("\nParticion demasiado grande\n");
+        return -1;
+        }
+
+        strcpy(mbr01->mbr_partition3.part_fit,fit1);
+        strcpy(mbr01->mbr_partition3.part_name,name1);
+        strcpy(mbr01->mbr_partition3.part_type,type1);
+        mbr01->mbr_partition3.part_size    =size1;
+        mbr01->mbr_partition3.part_start   =inicio;
+        mbr01->mbr_partition3.part_status  =1;
+
+    FILE *partc11 =fopen(path1,"rb+");
+    fseek(partc11,0,SEEK_SET);
+    fwrite(mbr01,sizeof(mbr),1,partc11);
+    fclose(partc11);
+
+    if(strcmp(type1,"e")==0){
+        ebr *ebr1 =(ebr*)malloc(sizeof(ebr));
+        ebr1->part_status=1;
+        FILE* amigo=fopen(path1,"rb+");
+        fseek(amigo,0,SEEK_SET);
+        mbr* auxiliar=(mbr*)malloc(sizeof(mbr));
+        fread(auxiliar,sizeof(mbr),1,amigo);
+        fseek(amigo,inicio,SEEK_CUR);
+        strcpy(ebr1->part_fit,"");
+        ebr1->part_status=0;
+        ebr1->part_start=-1;
+        ebr1->part_size=0;
+        ebr1->part_next=-1;
+        strcpy(ebr1->part_name,"");
+        fwrite(ebr1,sizeof(ebr),1,amigo);
+
+        fclose(amigo);
+
+    }
+
+   }
+
+        //SI PARTICION CUATRO ESTA VACIA
+        else if(mbr01->mbr_partition4.part_size==0){
+
+        int inicio=0;
+        inicio=IniciarParticion(mbraux->mbr_partition1.part_start,mbraux->mbr_partition1.part_size,mbraux->mbr_partition3.part_start,mbraux->mbr_partition3.part_size,mbraux->mbr_partition2.part_start,mbraux->mbr_partition2.part_size,size1,mbraux->mbr_tamanio);
+
+        if(inicio<0){
+        printf("\nParticion demasiado grande\n");
+        return -1;
+        }
+
+        strcpy(mbr01->mbr_partition4.part_fit,fit1);
+        strcpy(mbr01->mbr_partition4.part_name,name1);
+        strcpy(mbr01->mbr_partition4.part_type,type1);
+        mbr01->mbr_partition4.part_size    =size1;
+        mbr01->mbr_partition4.part_start   =inicio;
+        mbr01->mbr_partition4.part_status  =1;
+
+    FILE *partc11 =fopen(path1,"rb+");
+    fseek(partc11,0,SEEK_SET);
+    fwrite(mbr01,sizeof(mbr),1,partc11);
+    fclose(partc11);
+
+    if(strcmp(type1,"e")==0){
+        ebr *ebr1 =(ebr*)malloc(sizeof(ebr));
+        ebr1->part_status=1;
+        FILE* amigo=fopen(path1,"rb+");
+        fseek(amigo,0,SEEK_SET);
+        mbr* auxiliar=(mbr*)malloc(sizeof(mbr));
+        fread(auxiliar,sizeof(mbr),1,amigo);
+        fseek(amigo,inicio,SEEK_CUR);
+        strcpy(ebr1->part_fit,"");
+        ebr1->part_status=0;
+        ebr1->part_start=-1;
+        ebr1->part_size=0;
+        ebr1->part_next=-1;
+        strcpy(ebr1->part_name,"");
+        fwrite(ebr1,sizeof(ebr),1,amigo);
+
+        fclose(amigo);
+
+    }
 
    }
 
     }
 
+    //SI SE ELIMINA UNA PARTICION
+     if(delete11>0){
+        FILE *eliminar=fopen(path1,"rb+");
+        fseek(eliminar,0,SEEK_SET);
+        mbr* mod=(mbr*)malloc(sizeof(mbr));
+        fread(mod,sizeof(mbr),1,eliminar);
+        fclose(eliminar);
+        printf("\nDesea eliminar particion (si o no)\n");
+        char*des[20];
+        fgets(des,20,stdin);
+        if(strcmp(des,"no")==0){
+            printf("\nParticion NO eliminada\n");
+            return-1;
+        }else if(strcmp(des,"si")!=0){
+            printf("\nRespuesta invalida, se aborto la mision.\n");
+            return-1;
+        }
+        //PARA PARTICION UNO
+        if(strcmp(mod->mbr_partition1.part_name,name1)==0){
+
+
+            if(strcmp(delete1,"fast")==0){
+                mod->mbr_partition1.part_status=0;
+                mod->mbr_partition1.part_size=0;
+                mod->mbr_partition1.part_start=0;
+         strcpy(mod->mbr_partition1.part_fit,"");
+         strcpy(mod->mbr_partition1.part_name,"");
+         strcpy(mod->mbr_partition1.part_type,"x");
+
+
+            }
+            else if(strcmp(delete1,"full")==0){
+
+                       mod->mbr_partition1.part_status=0;
+                       mod->mbr_partition1.part_size=0;
+                       mod->mbr_partition1.part_start=0;
+                strcpy(mod->mbr_partition1.part_fit,"");
+                strcpy(mod->mbr_partition1.part_name,"");
+                strcpy(mod->mbr_partition1.part_type,"x");
+
+            }else{
+                printf("\nError en comando delete.\n");
+                return -1;
+            }
+        }
+        //PARA PARTICION DOS
+        else if(strcmp(mod->mbr_partition2.part_name,name1)==0){
+            if(strcmp(delete1,"fast")==0){
+                mod->mbr_partition2.part_status=0;
+                mod->mbr_partition2.part_size=0;
+                mod->mbr_partition2.part_start=0;
+         strcpy(mod->mbr_partition2.part_fit,"");
+         strcpy(mod->mbr_partition2.part_name,"");
+         strcpy(mod->mbr_partition2.part_type,"x");
+
+            }
+            else if(strcmp(delete1,"full")==0){
+                       mod->mbr_partition2.part_status=0;
+                       mod->mbr_partition2.part_size=0;
+                       mod->mbr_partition2.part_start=0;
+                strcpy(mod->mbr_partition2.part_fit,"");
+                strcpy(mod->mbr_partition2.part_name,"");
+                strcpy(mod->mbr_partition2.part_type,"x");
+
+            }else{
+                printf("\nError en comando delete.\n");
+                return -1;
+            }
+
+        }
+        //PARA PARTICION TRES
+        else if(strcmp(mod->mbr_partition3.part_name,name1)==0){
+            if(strcmp(delete1,"fast")==0){
+                mod->mbr_partition3.part_status=0;
+                mod->mbr_partition3.part_size=0;
+                mod->mbr_partition3.part_start=0;
+         strcpy(mod->mbr_partition3.part_fit,"");
+         strcpy(mod->mbr_partition3.part_name,"");
+         strcpy(mod->mbr_partition3.part_type,"x");
+
+            }
+            else if(strcmp(delete1,"full")==0){
+                       mod->mbr_partition3.part_status=0;
+                       mod->mbr_partition3.part_size=0;
+                       mod->mbr_partition3.part_start=0;
+                strcpy(mod->mbr_partition3.part_fit,"");
+                strcpy(mod->mbr_partition3.part_name,"");
+                strcpy(mod->mbr_partition3.part_type,"x");
+
+            }else{
+                printf("\nError en comando delete.\n");
+                return -1;
+            }
+
+        }
+        //PARA PARTICION CUATRO
+        else if(strcmp(mod->mbr_partition4.part_name,name1)==0){
+            if(strcmp(delete1,"fast")==0){
+
+
+                mod->mbr_partition4.part_status=0;
+                mod->mbr_partition4.part_size=0;
+                mod->mbr_partition4.part_start=0;
+         strcpy(mod->mbr_partition4.part_fit,"");
+         strcpy(mod->mbr_partition4.part_name,"");
+         strcpy(mod->mbr_partition4.part_type,"x");
+
+            }
+            else if(strcmp(delete1,"full")==0){
+
+                       mod->mbr_partition4.part_status=0;
+                       mod->mbr_partition4.part_size=0;
+                       mod->mbr_partition4.part_start=0;
+                strcpy(mod->mbr_partition4.part_fit,"");
+                strcpy(mod->mbr_partition4.part_name,"");
+                strcpy(mod->mbr_partition4.part_type,"x");
+
+            }else{
+                printf("\nError en comando delete.\n");
+                return -1;
+            }
+        }else{
+            printf("\nNOMBRE DE PARTICION NO EXISTE\n");
+            return -1;
+        }
+
+        FILE *eliminar1=fopen(path1,"rb+");
+        fseek(eliminar1,0,SEEK_SET);
+        fwrite(mod,sizeof(mbr),1,eliminar1);
+        fclose(eliminar1);
+        printf("\nPARTICION ELIMINADA\n");
+
+
+    }
+
+
+     if(add1!=0){
+        FILE *agregar=fopen(path1,"rb+");
+        fseek(agregar,0,SEEK_SET);
+        mbr *mod=(mbr*)malloc(sizeof(mbr));
+        fread(mod,sizeof(mbr),1,agregar);
+        fclose(agregar);
+
+        if(strcmp(mod->mbr_partition1.part_name,name1)==0){
+
+            if(Menos==0){
+                int chule  = mod->mbr_partition1.part_start+mod->mbr_partition1.part_size;
+                int chule0 =chule+add1;
+                int chule1 = mod->mbr_partition2.part_start;
+                int chule2 = mod->mbr_partition3.part_start;
+                int chule3 = mod->mbr_partition4.part_start;
+
+                int britany1 = mod->mbr_partition2.part_size;
+                int britany2 = mod->mbr_partition3.part_size;
+                int britany3 = mod->mbr_partition4.part_size;
+
+                int brayan =mod->mbr_tamanio;
+
+
+                if(chule1>chule && (chule1<chule2 || britany2<=0) && (chule1<chule3 || britany3<=0) ){
+                    if(chule0<chule1){
+                     mod->mbr_partition1.part_size=chule0;
+                     FILE *betzy = fopen(path1,"rb+");
+                     fseek(betzy,0,SEEK_SET);
+                     fwrite(mod,sizeof(mbr),1,betzy);
+                     fclose(betzy);
+                     printf("\nESPACIO MODIFICADO\n");
+                     return -1;
+                    }else{
+                        printf("\nNo hay suficiente espacio libre para agrandar la particion\n");
+                        return -1;
+                    }
+                }else if(chule2>chule && (chule2<chule1 || britany1<=0) && (chule2<chule3 || britany3<=0) ){
+                    if(chule0<chule2){
+                     mod->mbr_partition1.part_size=chule0;
+                     FILE *betzy = fopen(path1,"rb+");
+                     fseek(betzy,0,SEEK_SET);
+                     fwrite(mod,sizeof(mbr),1,betzy);
+                     fclose(betzy);
+                     printf("\nESPACIO MODIFICADO\n");
+                     return -1;
+                    }else{
+                        printf("\nNo hay suficiente espacio libre para agrandar la particion\n");
+                        return -1;
+                    }
+
+
+                }else if(chule3>chule && (chule3<chule1 || britany1<=0) && (chule3<chule2 || britany2<=0) ){
+                    if(chule0<chule3){
+                     mod->mbr_partition1.part_size=chule0;
+                     FILE *betzy = fopen(path1,"rb+");
+                     fseek(betzy,0,SEEK_SET);
+                     fwrite(mod,sizeof(mbr),1,betzy);
+                     fclose(betzy);
+                     printf("\nESPACIO MODIFICADO\n");
+                     return -1;
+                    }else{
+                        printf("\nNo hay suficiente espacio libre para agrandar la particion\n");
+                        return -1;
+                    }
+                }else if(chule0<brayan){
+
+
+                     mod->mbr_partition1.part_size=chule0;
+                     FILE *betzy = fopen(path1,"rb+");
+                     fseek(betzy,0,SEEK_SET);
+                     fwrite(mod,sizeof(mbr),1,betzy);
+                     fclose(betzy);
+                     printf("\nESPACIO MODIFICADO\n");
+
+
+
+                }
+
+            }
+
+            else if(Menos!=0){
+                int tam   =mod->mbr_partition1.part_size;
+                int valor =tam-add1;
+                if(valor>0){
+                    mod->mbr_partition1.part_size=valor;
+                    FILE *betzy = fopen(path1,"rb+");
+                    fseek(betzy,0,SEEK_SET);
+                    fwrite(mod,sizeof(mbr),1,betzy);
+                    fclose(betzy);
+                    printf("\nESPACIO MODIFICADO\n");
+
+
+                }else{
+                    printf("\nNo hay suficiente espacio libre para modificar la particion\n");
+                    return -1;
+                }
+
+            }else{
+                printf("\nNo hay suficiente espacio libre para modificar la particion\n");
+                return -1;
+            }
+
+        }
+        else if(strcmp(mod->mbr_partition2.part_name,name1)==0){
+
+            if(Menos==0){
+                int chule  = mod->mbr_partition2.part_start+mod->mbr_partition2.part_size;
+                int chule0 =chule+add1;
+                int chule1 = mod->mbr_partition1.part_start;
+                int chule2 = mod->mbr_partition3.part_start;
+                int chule3 = mod->mbr_partition4.part_start;
+
+                int britany1 = mod->mbr_partition1.part_size;
+                int britany2 = mod->mbr_partition3.part_size;
+                int britany3 = mod->mbr_partition4.part_size;
+
+                int brayan =mod->mbr_tamanio;
+
+
+                if(chule1>chule && (chule1<chule2 || britany2<=0) && (chule1<chule3 || britany3<=0) ){
+                    if(chule0<chule1){
+                     mod->mbr_partition2.part_size=chule0;
+                     FILE *betzy = fopen(path1,"rb+");
+                     fseek(betzy,0,SEEK_SET);
+                     fwrite(mod,sizeof(mbr),1,betzy);
+                     fclose(betzy);
+                     printf("\nESPACIO MODIFICADO\n");
+                     return -1;
+                    }else{
+                        printf("\nNo hay suficiente espacio libre para agrandar la particion\n");
+                        return -1;
+                    }
+                }else if(chule2>chule && (chule2<chule1 || britany1<=0) && (chule2<chule3 || britany3<=0) ){
+                    if(chule0<chule2){
+                     mod->mbr_partition2.part_size=chule0;
+                     FILE *betzy = fopen(path1,"rb+");
+                     fseek(betzy,0,SEEK_SET);
+                     fwrite(mod,sizeof(mbr),1,betzy);
+                     fclose(betzy);
+                     printf("\nESPACIO MODIFICADO\n");
+                     return -1;
+                    }else{
+                        printf("\nNo hay suficiente espacio libre para agrandar la particion\n");
+                        return -1;
+                    }
+
+
+                }else if(chule3>chule && (chule3<chule1 || britany1<=0) && (chule3<chule2 || britany2<=0) ){
+                    if(chule0<chule3){
+                     mod->mbr_partition2.part_size=chule0;
+                     FILE *betzy = fopen(path1,"rb+");
+                     fseek(betzy,0,SEEK_SET);
+                     fwrite(mod,sizeof(mbr),1,betzy);
+                     fclose(betzy);
+                     printf("\nESPACIO MODIFICADO\n");
+                     return -1;
+                    }else{
+                        printf("\nNo hay suficiente espacio libre para agrandar la particion\n");
+                        return -1;
+                    }
+                }else if(chule0<brayan){
+
+
+                     mod->mbr_partition2.part_size=chule0;
+                     FILE *betzy = fopen(path1,"rb+");
+                     fseek(betzy,0,SEEK_SET);
+                     fwrite(mod,sizeof(mbr),1,betzy);
+                     fclose(betzy);
+                     printf("\nESPACIO MODIFICADO\n");
+
+
+                }
+
+            }
+
+            else if(Menos!=0){
+                int tam   =mod->mbr_partition2.part_size;
+                int valor =tam-add1;
+                if(valor>0){
+                    mod->mbr_partition2.part_size=valor;
+                    FILE *betzy = fopen(path1,"rb+");
+                    fseek(betzy,0,SEEK_SET);
+                    fwrite(mod,sizeof(mbr),1,betzy);
+                    fclose(betzy);
+                    printf("\nESPACIO MODIFICADO\n");
+
+
+                }else{
+                    printf("\nNo hay suficiente espacio libre para modificar la particion\n");
+                    return -1;
+                }
+
+            }else{
+                printf("\nNo hay suficiente espacio libre para modificar la particion\n");
+                return -1;
+            }
+
+        }
+        else if(strcmp(mod->mbr_partition3.part_name,name1)==0){
+            if(Menos==0){
+                int chule  = mod->mbr_partition3.part_start+mod->mbr_partition3.part_size;
+                int chule0 =chule+add1;
+                int chule1 = mod->mbr_partition2.part_start;
+                int chule2 = mod->mbr_partition1.part_start;
+                int chule3 = mod->mbr_partition4.part_start;
+
+                int britany1 = mod->mbr_partition2.part_size;
+                int britany2 = mod->mbr_partition1.part_size;
+                int britany3 = mod->mbr_partition4.part_size;
+
+                int brayan =mod->mbr_tamanio;
+
+
+                if(chule1>chule && (chule1<chule2 || britany2<=0) && (chule1<chule3 || britany3<=0) ){
+                    if(chule0<chule1){
+                     mod->mbr_partition3.part_size=chule0;
+                     FILE *betzy = fopen(path1,"rb+");
+                     fseek(betzy,0,SEEK_SET);
+                     fwrite(mod,sizeof(mbr),1,betzy);
+                     fclose(betzy);
+                     printf("\nESPACIO MODIFICADO\n");
+                     return -1;
+                    }else{
+                        printf("\nNo hay suficiente espacio libre para agrandar la particion\n");
+                        return -1;
+                    }
+                }else if(chule2>chule && (chule2<chule1 || britany1<=0) && (chule2<chule3 || britany3<=0) ){
+                    if(chule0<chule2){
+                     mod->mbr_partition3.part_size=chule0;
+                     FILE *betzy = fopen(path1,"rb+");
+                     fseek(betzy,0,SEEK_SET);
+                     fwrite(mod,sizeof(mbr),1,betzy);
+                     fclose(betzy);
+                     printf("\nESPACIO MODIFICADO\n");
+                     return -1;
+                    }else{
+                        printf("\nNo hay suficiente espacio libre para agrandar la particion\n");
+                        return -1;
+                    }
+
+
+                }else if(chule3>chule && (chule3<chule1 || britany1<=0) && (chule3<chule2 || britany2<=0) ){
+                    if(chule0<chule3){
+                     mod->mbr_partition3.part_size=chule0;
+                     FILE *betzy = fopen(path1,"rb+");
+                     fseek(betzy,0,SEEK_SET);
+                     fwrite(mod,sizeof(mbr),1,betzy);
+                     fclose(betzy);
+                     printf("\nESPACIO MODIFICADO\n");
+                     return -1;
+                    }else{
+                        printf("\nNo hay suficiente espacio libre para agrandar la particion\n");
+                        return -1;
+                    }
+                }else if( chule0<brayan){
+
+
+                     mod->mbr_partition3.part_size=chule0;
+                     FILE *betzy = fopen(path1,"rb+");
+                     fseek(betzy,0,SEEK_SET);
+                     fwrite(mod,sizeof(mbr),1,betzy);
+                     fclose(betzy);
+                     printf("\nESPACIO MODIFICADO\n");
+
+
+
+                }
+
+            }
+
+            else if(Menos!=0){
+                int tam   =mod->mbr_partition3.part_size;
+                int valor =tam-add1;
+                if(valor>0){
+                    mod->mbr_partition3.part_size=valor;
+                    FILE *betzy = fopen(path1,"rb+");
+                    fseek(betzy,0,SEEK_SET);
+                    fwrite(mod,sizeof(mbr),1,betzy);
+                    fclose(betzy);
+                    printf("\nESPACIO MODIFICADO\n");
+
+
+                }else{
+                    printf("\nNo hay suficiente espacio libre para modificar la particion\n");
+                    return -1;
+                }
+
+            }else{
+                printf("\nNo hay suficiente espacio libre para modificar la particion\n");
+                return -1;
+            }
+
+        }
+        else if(strcmp(mod->mbr_partition4.part_name,name1)==0){
+
+            if(Menos==0){
+                int chule  = mod->mbr_partition4.part_start+mod->mbr_partition4.part_size;
+                int chule0 =chule+add1;
+                int chule1 = mod->mbr_partition2.part_start;
+                int chule2 = mod->mbr_partition3.part_start;
+                int chule3 = mod->mbr_partition1.part_start;
+
+                int britany1 = mod->mbr_partition2.part_size;
+                int britany2 = mod->mbr_partition3.part_size;
+                int britany3 = mod->mbr_partition1.part_size;
+
+                int brayan =mod->mbr_tamanio;
+
+
+                if(chule1>chule && (chule1<chule2 || britany2<=0) && (chule1<chule3 || britany3<=0) ){
+                    if(chule0<chule1){
+                     mod->mbr_partition4.part_size=chule0;
+                     FILE *betzy = fopen(path1,"rb+");
+                     fseek(betzy,0,SEEK_SET);
+                     fwrite(mod,sizeof(mbr),1,betzy);
+                     fclose(betzy);
+                     printf("\nESPACIO MODIFICADO\n");
+                     return -1;
+                    }else{
+                        printf("\nNo hay suficiente espacio libre para agrandar la particion\n");
+                        return -1;
+                    }
+                }else if(chule2>chule && (chule2<chule1 || britany1<=0) && (chule2<chule3 || britany3<=0) ){
+                    if(chule0<chule2){
+                     mod->mbr_partition4.part_size=chule0;
+                     FILE *betzy = fopen(path1,"rb+");
+                     fseek(betzy,0,SEEK_SET);
+                     fwrite(mod,sizeof(mbr),1,betzy);
+                     fclose(betzy);
+                     printf("\nESPACIO MODIFICADO\n");
+                     return -1;
+                    }else{
+                        printf("\nNo hay suficiente espacio libre para agrandar la particion\n");
+                        return -1;
+                    }
+
+
+                }else if(chule3>chule && (chule3<chule1 || britany1<=0) && (chule3<chule2 || britany2<=0) ){
+                    if(chule0<chule3){
+                     mod->mbr_partition4.part_size=chule0;
+                     FILE *betzy = fopen(path1,"rb+");
+                     fseek(betzy,0,SEEK_SET);
+                     fwrite(mod,sizeof(mbr),1,betzy);
+                     fclose(betzy);
+                     printf("\nESPACIO MODIFICADO\n");
+                     return -1;
+                    }else{
+                        printf("\nNo hay suficiente espacio libre para agrandar la particion\n");
+                        return -1;
+                    }
+                }else if(chule0<brayan){
+
+
+                     mod->mbr_partition4.part_size=chule0;
+                     FILE *betzy = fopen(path1,"rb+");
+                     fseek(betzy,0,SEEK_SET);
+                     fwrite(mod,sizeof(mbr),1,betzy);
+                     fclose(betzy);
+                     printf("\nESPACIO MODIFICADO\n");
+                     return -1;
+
+
+                }
+
+            }
+
+            else if(Menos!=0){
+                int tam   =mod->mbr_partition4.part_size;
+                int valor =tam-add1;
+                if(valor>0){
+                    mod->mbr_partition4.part_size=valor;
+                    FILE *betzy = fopen(path1,"rb+");
+                    fseek(betzy,0,SEEK_SET);
+                    fwrite(mod,sizeof(mbr),1,betzy);
+                    fclose(betzy);
+                    printf("\nESPACIO MODIFICADO\n");
+
+
+                }else{
+                    printf("\nNo hay suficiente espacio libre para modificar la particion\n");
+                    return -1;
+                }
+
+            }else{
+                printf("\nNo hay suficiente espacio libre para modificar la particion\n");
+                return -1;
+            }
+        }else{
+            printf("\nNOMBRE DE PARTICION NO EXISTE\n");
+            return -1;
+        }
+
+
+    }
+
+
+
+
+
     return 1;
 }
-
-//a1, b1 ,c1 son los inicios de las particiones, y a2, b2, c2 son el size de cada particion
 int IniciarParticion(int a1,int a2, int b1, int b2, int c1, int c2, int size, int sizedisco){
+    //a1, b1 ,c1 son los inicios de las particiones, y a2, b2, c2 son el size de cada particion
     int aux1;
     int ref=-10;
 
@@ -1192,9 +1904,440 @@ int IniciarParticion(int a1,int a2, int b1, int b2, int c1, int c2, int size, in
 
 
 }
+int mount(char*token){
+int mostrar=0;
+    if(strstr(comprobarcadena,"path") && strstr(comprobarcadena,"name")){}
+
+    else{
+    int tm1=re->tam;
+     registro *ho=(registro*)malloc(sizeof(registro));
+     ho=re->primero;
+     while(tm1>=1){
+         printf("\nMONTADA: id: %s  name: %s    path: %s \n",ho->id,ho->name,ho->path);
+         ho=ho->siguiente;
+         tm1--;
+
+     }
+     return 0;
+     }
+    int op =0;
+    char *name1[50];
+    char *path1[200];
+    while(token !=NULL){
+        //printf("\nentro a while\n");
+        token=strtok(NULL," :");
+        if(token==NULL) break;
+
+        if(strstr(token,"-path"))    op=1;
+        if(strstr(token,"-name"))    op=2;
+     switch(op){
+      case 1:
+          token = strtok(NULL," :");
+      strcpy(path1,"/");
+      char *tok;
+      if(strstr(token,"\"")){
+        tok=strtok(token,"\"");
+        strcpy(path1,tok);
+      }else{
+          strcpy(path1,token);
+      }
+      //printf("el path es: %s",path1);
+      FILE* comprobar =fopen(path1,"r");
+      if(comprobar){
+      fclose(comprobar);
+      }else{
+      printf("\nArchivo Inexistente\n");
+      return -1;
+      }
+
+          break;
+      case 2:
+          token =strtok(NULL," :");
+          strcpy(name1,token);
+        //  printf("\nEl nombre es: %s\n",name1);
+          if(name1==NULL){
+              printf("\nNombre invalido\n");
+              return -1;
+          }
+          break;
+
+      default:
+          printf("\ncomandos invalidos\n");
+          return -1;
+          break;
+
+        }
+
+
+    }
+
+     FILE *archivo =fopen(path1,"rb+");
+     fseek(archivo,0,SEEK_SET);
+     mbr*aux =(mbr*)malloc(sizeof(mbr));
+     fread(aux,sizeof(mbr),1,archivo);
+     fclose(archivo);
+     if(archivo){
+         //printf("\nabrio archivo\n");
+     if(strcmp(aux->mbr_partition1.part_name,name1)==0 || strcmp(aux->mbr_partition2.part_name,name1)==0 || strcmp(aux->mbr_partition3.part_name,name1)==0 ||strcmp(aux->mbr_partition4.part_name,name1)==0){
+         registro* nuevo =(registro*)malloc(sizeof(registro));
+         strcpy(nuevo->name,name1);
+         strcpy(nuevo->path,path1);
+         char *id11[10];
+         if(re->tam==0){
+             strcpy(nuevo->id,"vda1");
+         }else{
+             registro* nodo =(registro*)malloc(sizeof(registro));
+             nodo=re->primero;
+             int rec=re->tam;
+
+             registro* nodo123 =(registro*)malloc(sizeof(registro));
+             nodo123=re->primero;
+             int rec123=re->tam;
+
+
+             int existe=0;
+             char *vd[10];//letra del id
+             int  *num;//numero que corresponde al id
+             char *to;
+             char* to2;
+
+
+             while(rec>=1){
+                 if(strcmp(nodo->path,path1)==0){
+                     addlista(nodo->id);
+
+                     char *superid[20];
+                     strcpy(superid,nodo->id);
+                     to=strtok(superid,"vd1234567890");
+
+                     if(to==NULL){
+                         char *superid1[20];
+                         strcpy(superid1,nodo->id);
+                         to2=strtok(superid1,"v");
+                         if(strstr(to2+1,"d")==0){
+                             strcpy(vd,"d");
+                         }else{
+                             strcpy(vd,"v");
+                         }
+                     }else{
+                     strcpy(vd,to);
+                     }
+
+
+                     existe=1;
+                 }
+                nodo =nodo->siguiente;
+                    rec--;
+             }
+             num = traernumero();
+             vaciarlista();
+
+             if(existe==0){
+              //   printf("\nid uno en existe 0: %s\n",re->primero->id);
+                 nodo=re->primero;
+                 rec=re->tam;
+                 char* vd1[10];
+                 int ban[30];
+                 int i=0;
+                 //printf("\nid uno en existe 0.1: %s\n",re->primero->id);
+                 for(i;i<=30;i++){
+                     ban[i]=-1;
+                 }
+                 int ii=0;
+                for(ii;ii<=30;ii++){
+               // printf("\ntodos menos uno valo de ban en %d:    %d \n",ii,ban[ii]);
+                }
+                 while(rec>=1){
+                     char *superid3[20];
+                     strcpy(superid3,nodo->id);
+                     to=strtok(superid3,"vd1234567890");
+
+                     if(to==NULL){
+                         char *superid4[20];
+                         strcpy(superid4,nodo->id);
+                         to2=strtok(superid4,"v");
+                         if(strstr(to2+1,"d")==0){
+                             strcpy(vd1,"d");
+                         }else{
+                             strcpy(vd1,"v");
+                         }
+                     }else{
+                     strcpy(vd1,to);
+                    // printf("\nletra ya existe: %s\n",vd1);
+                     }
+
+                     if(strcmp(vd1,"a")==0){ ban [1]=1;};
+                     if(strcmp(vd1,"b")==0){ ban [2]=1;};
+                     if(strcmp(vd1,"c")==0){ ban [3]=1;};
+                     if(strcmp(vd1,"d")==0){ ban [4]=1;};
+                     if(strcmp(vd1,"e")==0){ ban [5]=1;};
+                     if(strcmp(vd1,"f")==0){ ban [6]=1;};
+                     if(strcmp(vd1,"g")==0){ ban [7]=1;};
+                     if(strcmp(vd1,"h")==0){ ban [8]=1;};
+                     if(strcmp(vd1,"i")==0){ ban [9]=1;};
+                     if(strcmp(vd1,"j")==0){ ban [10]=1;};
+                     if(strcmp(vd1,"k")==0){ ban [11]=1;};
+                     if(strcmp(vd1,"l")==0){ ban [12]=1;};
+                     if(strcmp(vd1,"m")==0){ ban [13]=1;};
+                     if(strcmp(vd1,"n")==0){ ban [14]=1;};
+                     if(strcmp(vd1,"o")==0){ ban [15]=1;};
+                     if(strcmp(vd1,"p")==0){ ban [16]=1;};
+                     if(strcmp(vd1,"q")==0){ ban [17]=1;};
+                     if(strcmp(vd1,"r")==0){ ban [18]=1;};
+                     if(strcmp(vd1,"s")==0){ ban [19]=1;};
+                     if(strcmp(vd1,"t")==0){ ban [20]=1;};
+                     if(strcmp(vd1,"u")==0){ ban [21]=1;};
+                     if(strcmp(vd1,"v")==0){ ban [22]=1;};
+                     if(strcmp(vd1,"w")==0){ ban [23]=1;};
+                     if(strcmp(vd1,"x")==0){ ban [24]=1;};
+                     if(strcmp(vd1,"y")==0){ ban [25]=1;};
+                     if(strcmp(vd1,"z")==0){ ban [26]=1;};
+
+
+                    nodo =nodo->siguiente;
+                        rec--;
+                 }
+
+                 int iii=1;
+                for(iii;iii<=30;iii++){
+             //   printf("\nsolo el 2 debe dar uno %d:    %d \n",iii,ban[iii]);
+                }
+                 int j=1;
+                 int guarda;
+                 for(j;j<29;j++){
+
+                     if(ban[j]==-1){
+                     guarda=j;
+                    // printf("\nvalor de guarda: %d\n",guarda);
+                     break;
+                     }
+                 }
 
 
 
+                      if(guarda==1){strcpy(vd,"a");}
+                 else if(guarda==2){strcpy(vd,"b");}
+                 else if(guarda==3){strcpy(vd,"c");}
+                 else if(guarda==4){strcpy(vd,"d");}
+                 else if(guarda==5){strcpy(vd,"e");}
+                 else if(guarda==6){strcpy(vd,"f");}
+                 else if(guarda==7){strcpy(vd,"g");}
+                 else if(guarda==8){strcpy(vd,"h");}
+                 else if(guarda==9){strcpy(vd,"i");}
+                 else if(guarda==10){strcpy(vd,"j");}
+                 else if(guarda==11){strcpy(vd,"k");}
+                 else if(guarda==12){strcpy(vd,"l");}
+                 else if(guarda==13){strcpy(vd,"m");}
+                 else if(guarda==14){strcpy(vd,"n");}
+                 else if(guarda==15){strcpy(vd,"o");}
+                 else if(guarda==16){strcpy(vd,"p");}
+                 else if(guarda==17){strcpy(vd,"q");}
+                 else if(guarda==18){strcpy(vd,"r");}
+                 else if(guarda==19){strcpy(vd,"s");}
+                 else if(guarda==20){strcpy(vd,"t");}
+                 else if(guarda==21){strcpy(vd,"u");}
+                 else if(guarda==22){strcpy(vd,"v");}
+                 else if(guarda==23){strcpy(vd,"w");}
+                 else if(guarda==24){strcpy(vd,"x");}
+                 else if(guarda==25){strcpy(vd,"y");}
+                 else if(guarda==26){strcpy(vd,"z");}
+
+             }
+             char cadena1[10];
+
+            // printf("\nnumero justo antes de pasarlo: %d\n",num);
+             if(existe==0){
+             sprintf(cadena1, "%d", 1);
+             }else{
+
+                 sprintf(cadena1, "%d", num);
+             }
+           //  printf("\nnumero justo despues de pasarlo: %s\n",cadena1);
+             strcpy(id11,"vd");
+             strcat(id11,vd);
+             strcat(id11,cadena1);
+             strcpy(nuevo->id,id11);
+             printf("\nid de la nueva montada:  %s\n",nuevo->id);
+
+         }
+         nuevo->anterior=NULL;
+         nuevo->siguiente=NULL;
+
+
+         if(re->tam==0){
+             re->primero=re->ultimo=nuevo;
+             re->tam++;
+         }
+         else{
+             nuevo->anterior=re->ultimo;
+            re->ultimo->siguiente=nuevo;
+            re->ultimo=nuevo;
+            re->tam++;
+
+         }
+
+     }else{
+         printf("\nParticion solicitada no existe\n");
+         return -1;
+     }
+
+    }
+
+     int tm1=re->tam;
+     registro *ho=(registro*)malloc(sizeof(registro));
+     ho=re->primero;
+     while(tm1>=1){
+         printf("\nMONTADA: id: %s  name: %s    path: %s \n",ho->id,ho->name,ho->path);
+         ho=ho->siguiente;
+         tm1--;
+
+     }
+     return 0;
+
+}
+
+int umount(char*token){
+
+    if(strstr(comprobarcadena,"id")){ }else{printf("\nError en comando;\n"); return -1;}
+
+    int op =0;
+    char *id1[50];
+    while(token !=NULL){
+        token=strtok(NULL," :");
+
+        if(token==NULL) break;
+
+        if(strstr(token,"-id"))    op=1;
+         switch(op){
+            case 1:
+             token = strtok(NULL," :");
+             strcpy(id1,token);
+
+    registro* aux =(registro *)malloc(sizeof(registro));
+    registro* aux1 =(registro *)malloc(sizeof(registro));
+    registro* aux2 =(registro *)malloc(sizeof(registro));
+    aux=re->primero;
+    int n=re->tam;
+    int encontrado=0;
+    while(n>=1){
+
+        if(strcmp(id1,aux->id)==0){
+            encontrado=1;
+            break;
+        }
+        aux=aux->siguiente;
+        n--;
+    }
+    //printf("\nid de auxilair: %s\n",aux->id);
+    if(encontrado==1){
+
+      if(re->tam>1){
+           if(aux->siguiente==NULL){
+                 aux1->anterior=NULL;
+              }else{aux1=aux->siguiente;}
+
+
+            if(aux->anterior==NULL){
+                 aux2->siguiente=NULL;
+             }else{aux2=aux->anterior;}
+
+             re->tam--;
+
+            if(aux1->anterior==NULL){}
+            else{aux1->anterior=aux2;}
+
+            if(aux2->siguiente==NULL){}
+            else{aux2->siguiente=aux1;}
+
+       //------------------------------
+       if(re->primero==aux){
+           re->primero=aux->siguiente;
+       }
+       else if(re->ultimo==aux){
+           re->ultimo=aux->anterior;
+       }//-----------------------
+      free(aux);
+       }else{
+           re->primero=NULL;
+           re->ultimo=NULL;
+           re->tam=0;
+           free(aux);
+       }
+
+    }else{printf("\nNo existe una particion montada con ese id\n");}
+
+
+          //   printf("\nel id es: %s\n",id1);
+             break;
+
+         default:
+          printf("\ncomandos invalidos\n");
+          return -1;
+          break;
+        }
+    }
+
+
+
+
+
+    int tm1=re->tam;
+    registro *ho=(registro*)malloc(sizeof(registro));
+    ho=re->primero;
+    while(tm1>=1){
+        printf("\nMONTADA: id: %s  name: %s    path: %s \n",ho->id,ho->name,ho->path);
+        ho=ho->siguiente;
+        tm1--;
+
+    }
+    return 0;
+
+}
+
+void addlista(char* id[20]){
+    char *tok;
+     nodolista *nuevo=(nodolista*)malloc(sizeof(nodolista));
+     nuevo->anterior=(nodolista*)malloc(sizeof(nodolista));
+     nuevo->siguiente=(nodolista*)malloc(sizeof(nodolista));
+     nuevo->anterior=NULL;
+     nuevo->siguiente=NULL;
+     tok=strtok(id,"abcdefghijklmnopqrstuvwxyz");
+     int numero =atoi(tok);
+     nuevo->numero=numero;
+     int tam= listanumeros->tam;
+
+     if(tam==0){
+         listanumeros->primero=listanumeros->ultimo=nuevo;
+         listanumeros->tam++;
+     }else{
+         nuevo->anterior=listanumeros->ultimo;
+        listanumeros->ultimo->siguiente=nuevo;
+        listanumeros->ultimo=nuevo;
+        listanumeros->tam++;
+     }
+
+}
+int traernumero(){
+int aux1=1;
+int tam =listanumeros->tam;
+
+nodolista* auxiliar =(nodolista*)malloc(sizeof(nodolista));
+auxiliar=listanumeros->primero;
+
+    while(tam>=1){
+        if(auxiliar->numero ==aux1){
+            aux1++;
+        }
+        auxiliar=auxiliar->siguiente;
+        tam--;
+    }
+    return aux1;
+}
+void vaciarlista(){
+    listanumeros->primero=NULL;
+    listanumeros->ultimo=NULL;
+    listanumeros->tam=0;
+}
 
 
 
