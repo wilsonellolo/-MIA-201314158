@@ -1,0 +1,17 @@
+digraph{ 
+ rankdir = LR; 
+ node [shape = record, color = lightblue]; 
+ 
+
+subgraph clusterESTAD2{ 
+ label = " Reporte MBR"; 
+ color=green; 
+nodoec1[label = " mbr_disk_Signature: 0 | mbr_fecha_creacion: 09/08/16 19:43:28 | mbr_fecha_creacion: 3145728 | part_name: particion1 | part_fit de particion1 : wf | part_size de particion1: 102400 | part_start de particion1: 0 | part_status de de particion1: 1 | part_typede de particion1: p |  | part_name: particion2 | part_fit de particion2 : wf | part_size de particion2: 204800 | part_start de particion2: 102400 | part_status de de particion2: 1 | part_typede de particion2: p |  | part_name: particion3 | part_fit de particion3 : wf | part_size de particion3: 307200 | part_start de particion3: 307200 | part_status de de particion3: 1 | part_typede de particion3: e | "];
+}
+
+subgraph clusterLOGICAS2{ 
+ label = " Reporte MBR Particiones Logicas"; 
+ color=green; 
+nodoec11[label = "  part_fit:  | part_name:  | part_next: -1 | part_size: 0 | part_start: -1 | part_status: 0"];
+}
+}

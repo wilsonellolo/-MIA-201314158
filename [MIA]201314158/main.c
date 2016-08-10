@@ -15,26 +15,56 @@ typedef struct{
     struct registro *siguiente;
     struct registro *anterior;
 }registro;
-
 typedef struct{
     registro *primero;
     registro *ultimo;
     int tam;
 }tabla;
-tabla *re;
 typedef struct{
     int numero;
     struct nodolista *siguiente;
     struct nodolista *anterior;
 }nodolista;
-
 typedef struct{
    nodolista *primero;
    nodolista *ultimo;
     int tam;
 }lista;
-lista* listanumeros;
-
+typedef struct{
+    int part_status;
+    char part_fit[100];
+    int part_start;
+    int part_size;
+    int part_next;
+    char part_name[25];
+    struct nodolistaebr *siguiente;
+    struct nodolistaebr *anterior;
+}nodolistaebr;
+typedef struct{
+    nodolistaebr *primero;
+    nodolistaebr *ultimo;
+    int tam;
+}listaebr;
+typedef struct{
+    int mbr_tamanio;
+    char mbr_fecha_creacion[128];
+    int mbr_disk_signature;
+    int  part_status;
+    char part_type[100];
+    char part_fit[100];
+    int  part_start;
+    int  part_size;
+    char part_name[25];
+    int  existeebr;
+    int  EsMbr;
+    struct reportedisk *siguiente;
+    struct reportedisk *anterior;
+}reportedisk;
+typedef struct{
+    reportedisk *primero;
+    reportedisk *ultimo;
+    int tam;
+}listareportedisk;
 typedef struct{
     int  part_status;
     char part_type[100];
@@ -43,7 +73,6 @@ typedef struct{
     int  part_size;
     char part_name[25];
 }partition;
-
 typedef struct{
     int mbr_tamanio;
     char mbr_fecha_creacion[128];
@@ -53,7 +82,6 @@ typedef struct{
     partition mbr_partition3;
     partition mbr_partition4;
 }mbr;
-
 typedef struct{
     int part_status;
     char part_fit[100];
@@ -63,28 +91,32 @@ typedef struct{
     char part_name[25];
 }ebr;
 
+//VARIABLES GLOBALES
+lista* listanumeros;
+tabla *re;
+listareportedisk * reportedisk1;
+listaebr *listalogicas;
+int logsumasize=0;
+int lognombreexiste=0;
 char* comprobarcadena[200];
-/*
-FASE 1
-La fase 1 se entregará el día viernes 12 de agosto antes de las 23:50 PM, al correo deben enviar el link
-de su repositorio en github, para su descarga (tomen en cuenta que se ve la fecha de la última
-modificación). Asunto: [MIA]Fase1_carné
-Pares: 201212838@ingenieria.usac.edu.gt e Impares: Georgina.estrada78@gmail.com
-1. Administración de disco
-1.1. Mkdisk LISTO
-1.2.Rmdisk LISTO
-1.3. Fdisk
-1.4.Mount
-1.5.Umount
-2. Reportes (Esenciales para calificación)
-2.1. Mbr
-2.2. Disk
-2.3. Exec LISTO
-*/
-int main()
-{
+int numcirr;
+int main(){
 
 //INICIAR TODAS LAS ESTRUCTURAS
+    reportedisk1=(listareportedisk*)malloc(sizeof(listareportedisk));
+    reportedisk1->primero=(listareportedisk*)malloc(sizeof(listareportedisk));
+    reportedisk1->ultimo=(listareportedisk*)malloc(sizeof(listareportedisk));
+    reportedisk1->primero=NULL;
+    reportedisk1->ultimo=NULL;
+    reportedisk1->tam=0;
+
+    listalogicas=(listaebr*)malloc(sizeof(listaebr));
+    listalogicas->primero=(listaebr*)malloc(sizeof(listaebr));
+    listalogicas->ultimo=(listaebr*)malloc(sizeof(listaebr));
+    listalogicas->primero=NULL;
+    listalogicas->ultimo=NULL;
+    listalogicas->tam=0;
+
     re = (tabla *)malloc(sizeof(tabla));
     re->primero = (registro *)malloc(sizeof(registro));
     re->ultimo = (registro *)malloc(sizeof(registro));
@@ -120,7 +152,6 @@ int main()
 }
 
 //METODOS FASE 1
-
 int leerComandos(char *cadena[300]){
    char CadenaSalto[100];
     char Comando[300];
@@ -184,9 +215,9 @@ if(strstr(cadena,"#")){
         else if(strcmp(token,"umount")==0){
             umount(token);
         }
-    /*    else if(strcmp(token,"rep")==0){
-            rep();
-        }*/
+        else if(strcmp(token,"rep")==0){
+            rep(token);
+        }
         else if(strcmp(token,"exec")==0){
 
             exec(token);
@@ -194,7 +225,6 @@ if(strstr(cadena,"#")){
         } else if(strcmp(cadena,"\n")==0){ return 8;}
         return 0;
 }
-
 int exec (char *token){
 
     char path[150]="";
@@ -258,9 +288,9 @@ int control=0;
 int tamanioDeDisco;
 char unitletra[5]="m";
 char Nombre[200];
-char direccionPath[200];
-char direccionPath2[200];
-char direccionPath3[200];
+char dpth[200];
+char dpth2[200];
+char dpth3[200];
 while(token !=NULL){
 
     token = strtok(NULL," ::");
@@ -306,13 +336,13 @@ while(token !=NULL){
         if(strstr(token,comillas)){
 
             token=strtok(NULL,"\"");
-            strcpy(direccionPath,token);
-            strcpy(direccionPath2,direccionPath);
-            strcpy(direccionPath3,direccionPath);
+            strcpy(dpth,token);
+            strcpy(dpth2,dpth);
+            strcpy(dpth3,dpth);
         }else{
-            strcpy(direccionPath,token);
-            strcpy(direccionPath2,token);
-            strcpy(direccionPath3,token);
+            strcpy(dpth,token);
+            strcpy(dpth2,token);
+            strcpy(dpth3,token);
         }
 
         break;
@@ -349,12 +379,12 @@ while(token !=NULL){
 }
     //SE CREA EL PATH
 
-    strcat(direccionPath,Nombre);
-    strcat(direccionPath2,Nombre);
-    strcat(direccionPath3,Nombre);
+    strcat(dpth,Nombre);
+    strcat(dpth2,Nombre);
+    strcat(dpth3,Nombre);
     int numPalabras =1;
     char *tem;
-    tem =strtok(direccionPath,"/");
+    tem =strtok(dpth,"/");
 
     while(tem!=NULL){
         tem =strtok(NULL,"/");
@@ -364,7 +394,7 @@ while(token !=NULL){
 
     char pathReal[200]="/";
     char*aux11;
-    aux11= strtok(direccionPath2,"/");
+    aux11= strtok(dpth2,"/");
     strcat(pathReal,aux11);
     strcat(pathReal,"/");
     while(numPalabras > 2)
@@ -379,7 +409,7 @@ while(token !=NULL){
     aux11 = strtok(NULL,"/");
 
     mbr *mbr1 =(mbr*)malloc(sizeof(mbr));
-    FILE *archivo = fopen(direccionPath3,"wb");
+    FILE *archivo = fopen(dpth3,"wb");
 
     //obteniendo fecha del sistema
     timer_t tiempo = time(0);
@@ -432,7 +462,7 @@ fclose(archivo);
 /**************************/
 
 mbr *mbrLeido=(mbr*)malloc(sizeof(mbr));
-FILE *archivo1 =fopen(direccionPath3,"rb");
+FILE *archivo1 =fopen(dpth3,"rb");
 fread(mbrLeido,sizeof(mbr),1,archivo1);
 int t= sizeof(mbrLeido);
 printf("\ntamannio: %d\n", mbrLeido->mbr_tamanio);
@@ -2195,7 +2225,6 @@ int mostrar=0;
      return 0;
 
 }
-
 int umount(char*token){
 
     if(strstr(comprobarcadena,"id")){ }else{printf("\nError en comando;\n"); return -1;}
@@ -2293,7 +2322,6 @@ int umount(char*token){
     return 0;
 
 }
-
 void addlista(char* id[20]){
     char *tok;
      nodolista *nuevo=(nodolista*)malloc(sizeof(nodolista));
@@ -2338,7 +2366,2562 @@ void vaciarlista(){
     listanumeros->ultimo=NULL;
     listanumeros->tam=0;
 }
+int rep(char *token){
+/********************************************************************************************************************************************************************/
+    int    op = 0;
+    char*  path1[200];
+    char*  name1[50];
+    char*  id1[20];
 
+    char dpth[200];
+    char dpth2[200];
+    char dpth3[200];
+
+
+
+       if(strstr(comprobarcadena,"-path") && strstr(comprobarcadena,"-name") && strstr(comprobarcadena,"-id")){
+
+       }else{
+           printf("\nFalta Informacion\n");
+       return -1;
+       }
+       if(strstr(comprobarcadena,"mbr") || strstr(comprobarcadena,"disk") ){
+
+       }else{
+           printf("\nnombre de reporte no especificado.\n");
+       return -1;
+       }
+
+    while(token !=NULL){
+        token=strtok(NULL," :");
+        if(token==NULL) break;
+        if(strstr(token,"-path"))    op=1;
+        if(strstr(token,"-name"))    op=2;
+        if(strstr(token,"-id"))    op=3;
+     switch(op){
+      case 1:
+         token = strtok(NULL," :");
+
+         if(strstr(token,"\"")){
+             strcpy(dpth,token+1);
+             token=strtok(NULL,"\"");
+             strcat(dpth," ");
+             strcat(dpth,token);
+             strcpy(dpth2,dpth);
+             strcpy(dpth3,dpth);
+         }else{
+             strcpy(dpth,token);
+             strcpy(dpth2,token);
+             strcpy(dpth3,token);
+         }
+         break;
+
+      case 2:
+          token =strtok(NULL," :");
+          strcpy(name1,token);
+          if(name1==NULL){
+              printf("\nNombre invalido\n");
+              return -1;
+          }
+          break;
+
+     case 3:
+         token =strtok(NULL," :");
+         strcpy(id1,token);
+         if(id1==NULL){
+             printf("\nid invalido\n");
+             return -1;
+         }
+         break;
+
+      default:
+          printf("\ncomandos invalidos\n");
+          return -1;
+          break;
+
+        }
+
+    }
+        //printf("\n--path: %s path: %s\n",dpth3,dpth);
+
+    /********************CREANDO PATH***********************/
+    //creando path
+    int numPalabras =1;
+    char *tem;
+    tem =strtok(dpth,"/");
+
+    while(tem!=NULL){
+        tem =strtok(NULL,"/");
+        if(tem==NULL) break;
+        numPalabras++;
+    }
+
+    char pathReal[200]="/";
+    char*aux11;
+    aux11= strtok(dpth2,"/");
+    strcat(pathReal,aux11);
+    strcat(pathReal,"/");
+    while(numPalabras > 2)
+    {
+        aux11 = strtok(NULL,"/");
+        strcat(pathReal,aux11);
+        strcat(pathReal,"/");
+        mkdir(pathReal ,S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        numPalabras--;
+    }
+
+    aux11 = strtok(NULL,"/");
+        /********************FN DE CREAR PATH***********************/
+
+    /********************VERIFICAR EXISTENCIA DE ID***********************/
+    registro* aux1=(registro*)malloc(sizeof(registro));
+    aux1=re->primero;
+    int tam = re->tam;
+    if(tam==0){
+    printf("\nNo hay particiones montadas.\n");
+    return -1;
+    }
+        while(tam>=1){
+
+            if(strcmp(aux1->id,id1)==0){
+                break;
+            }
+            aux1=aux1->siguiente;
+            tam--;
+            if(tam==0){printf("\nNo se encontro el id\n"); return -1;}
+        }
+
+
+    /********************FIN DE VERIFICAR EXISTENCIA DE ID***********************/
+    /********************TRAYENDO EL DISCO COMPLETO Y CARGAR TODAS SUS PARTICIONES****************************/
+        mbr* cargambr=(mbr*)malloc(sizeof(mbr));
+        FILE*disco=fopen(aux1->path,"rb+");
+        fseek(disco,0,SEEK_SET);
+        fread(cargambr,sizeof(mbr),1,disco);
+        //printf("\nname1: %s\n",name1);
+
+        if(strcmp(name1,"mbr")==0 ||strcmp(name1,"disk")==0){
+            enviarebrs(aux1->path);
+            reportedisk* crea =(reportedisk*)malloc(sizeof(reportedisk));
+            int ext=0;
+            int h=4;
+            int contador =1;
+            /****Agregando el mbr a la lista de reporte disk***************/
+                  crea->anterior==NULL;
+                  crea->siguiente==NULL;
+                  strcpy(crea->mbr_fecha_creacion,cargambr->mbr_fecha_creacion);
+                  crea->mbr_tamanio=cargambr->mbr_tamanio;
+                  crea->EsMbr=1;
+                  if(reportedisk1->tam==0){
+                      reportedisk1->primero=reportedisk1->ultimo=crea;
+                      reportedisk1->tam++;
+                     // printf("\nmbr: agregado\n");
+                  }
+            /****Fin de agregar el mbr a la lista de reporte disk**********/
+
+            while(h>0){
+                if(contador==1 && cargambr->mbr_partition1.part_size>0){
+                   // printf("\nnombre de la particion 1: %s\n",cargambr->mbr_partition1.part_name);
+                    addlistareportedisk(cargambr->mbr_partition1);
+                    if(strcmp(cargambr->mbr_partition1.part_type,"e")==0){ext=1;};
+                }
+                if(contador==2 && cargambr->mbr_partition2.part_size>0){
+                    addlistareportedisk(cargambr->mbr_partition2);
+                    if(strcmp(cargambr->mbr_partition2.part_type,"e")==0){ext=2;};
+                }
+                if(contador==3 && cargambr->mbr_partition3.part_size>0){
+                    addlistareportedisk(cargambr->mbr_partition3);
+                    if(strcmp(cargambr->mbr_partition3.part_type,"e")==0){ext=3;};
+                }
+                if(contador==4 && cargambr->mbr_partition4.part_size>0){
+                    addlistareportedisk(cargambr->mbr_partition4);
+                    if(strcmp(cargambr->mbr_partition4.part_type,"e")==0){ext=4;};
+                }
+
+                contador++;
+                h--;
+            }
+
+        }
+
+
+        fclose(disco);
+        int pq =reportedisk1->tam;
+        reportedisk *repaux=(reportedisk*)malloc(sizeof(reportedisk));
+        repaux=(reportedisk*)malloc(sizeof(reportedisk));
+        repaux=reportedisk1->primero;
+        while(pq>=1){
+            if(repaux->EsMbr==1){
+
+               // printf("\nCREACION FECHA MBR: %s\n",repaux->mbr_fecha_creacion);
+            }else
+           // printf("\nnombre de la part: %s\n",repaux->part_name);
+            repaux=repaux->siguiente;
+         pq--;
+        }
+
+    /********************FIN DE TRAER EL DISCO COMPLETO Y CARGAR TODAS SUS PARTICIONES ***********************/
+
+
+/**********************************************************************************************************************************************************************/
+
+   FILE *archivo = fopen("archivosMBR.dot","w");
+   if(strcmp(name1,"mbr")==0){
+    char *inicio= "digraph{ \n rankdir = LR; \n node [shape = record, color = lightblue]; \n";
+    fprintf(archivo, "%s \n", inicio);
+   }
+    fclose(archivo);
+       if(strcmp(name1,"mbr")==0){
+            repMBR();
+        }
+       if(strcmp(name1,"disk")==0){
+            repDISK(aux1->path);
+        }
+    FILE *archivo1 = fopen("archivosMBR.dot","a");
+
+    char *cd = "}";
+    fprintf(archivo1,"%s",cd);
+
+
+    fclose(archivo1);
+    char*direccion[200];
+    strcpy(direccion,dpth3);
+
+     /*******************/
+         //;
+         char ja[50] = "dot -Tjpg archivosMBR.dot -o ";
+         strcat(ja,dpth3);
+         system(ja);
+         printf("\nReporte creado con exito.\n");
+
+     /*******************/
+         vaciarlistadereportes();
+         vaciarlisebr();
+     return 0;
+}
+void repMBR(){
+
+numcirr++;
+    char *nombre[200] ;
+    strcpy(nombre,"archivosMBR.dot");
+    FILE *archivo1 = fopen(nombre, "a");
+
+    char *c1 = "\nsubgraph clusterESTAD";
+    fprintf(archivo1, "%s", c1);
+    fprintf(archivo1, "%d", numcirr);
+
+    char *c2 = "{ \n label = ""\" Reporte MBR";
+    fprintf(archivo1, "%s", c2);
+
+    char *c3 = """\"; \n color=green; \n";
+    fprintf(archivo1, "%s", c3);
+
+    if(reportedisk1->tam==0){}
+    else{
+
+            char *cc7 = "nodoec1";
+            fprintf(archivo1, "%s", cc7);
+            int flor=reportedisk1->tam;
+            reportedisk* ingresar =(reportedisk*)malloc(sizeof(reportedisk));
+            ingresar = reportedisk1->primero;
+            char *cq8 = "[label = ""\" ";
+            fprintf(archivo1, "%s", cq8);
+            while(flor>=1){
+
+           if(ingresar->EsMbr==1){
+               fprintf(archivo1, "mbr_disk_Signature: %d",ingresar->mbr_disk_signature);
+               char *ccc8 = " | ";
+               fprintf(archivo1, "%s", ccc8);
+               fprintf(archivo1, "mbr_fecha_creacion: %s",ingresar->mbr_fecha_creacion);
+               char *ccc88 = " | ";
+               fprintf(archivo1, "%s", ccc88);
+               fprintf(archivo1, "mbr_fecha_creacion: %d",ingresar->mbr_tamanio);
+               if(reportedisk1->tam==1){ break;}else{
+               char *ccc888 = " | ";
+                fprintf(archivo1, "%s", ccc888);
+               }
+
+
+           }else{
+            fprintf(archivo1, "part_name: %s",ingresar->part_name);
+            char *ccc8 = " | ";
+            fprintf(archivo1, "%s", ccc8);
+            fprintf(archivo1, "part_fit de %s : %s",ingresar->part_name,ingresar->part_fit);
+            char *ccc88 = " | ";
+            fprintf(archivo1, "%s", ccc88);
+            fprintf(archivo1, "part_size de %s: %d",ingresar->part_name,ingresar->part_size);
+            char *ccc888 = " | ";
+            fprintf(archivo1, "%s", ccc888);
+            fprintf(archivo1, "part_start de %s: %d",ingresar->part_name,ingresar->part_start);
+            char *ccc8888 = " | ";
+            fprintf(archivo1, "%s", ccc8888);
+            fprintf(archivo1, "part_status de de %s: %d",ingresar->part_name,ingresar->part_status);
+            char *ccc88888 = " | ";
+            fprintf(archivo1, "%s", ccc88888);
+            fprintf(archivo1, "part_typede de %s: %s",ingresar->part_name,ingresar->part_type);
+            char *ccc888888 = " | ";
+            fprintf(archivo1, "%s", ccc888888);
+            if(flor==1){break;}
+            else{
+                char *ccc8888888 = " | ";
+                fprintf(archivo1, "%s", ccc8888888);
+            }
+
+           }
+
+            ingresar=ingresar->siguiente;
+            flor--;
+            }
+
+            char *cq9 = """\"];\n";
+            fprintf(archivo1, "%s", cq9);
+
+        }
+
+        char *c7 = "}\n";
+        fprintf(archivo1, "%s", c7);
+
+        if(listalogicas->tam>0){
+            /********************************************************************************************************************/
+            char *c1 = "\nsubgraph clusterLOGICAS";
+            fprintf(archivo1, "%s", c1);
+            fprintf(archivo1, "%d", numcirr);
+
+            char *c2 = "{ \n label = ""\" Reporte MBR Particiones Logicas";
+            fprintf(archivo1, "%s", c2);
+
+            char *c3 = """\"; \n color=green; \n";
+            fprintf(archivo1, "%s", c3);
+                    int cuenta =0;
+                    int flor=listalogicas->tam;
+                    nodolistaebr* auxi =(nodolistaebr*)malloc(sizeof(nodolistaebr));
+                    auxi=listalogicas->primero;
+
+                    while(flor>=1){
+                        cuenta++;
+                        char *cc7 = "nodoec1";
+                        fprintf(archivo1, "%s%d", cc7,cuenta);
+
+                        char *cq8 = "[label = ""\"  ";
+                        fprintf(archivo1, "%s", cq8);
+                       fprintf(archivo1, "part_fit: %s",auxi->part_fit);
+                       char *ccc8 = " | ";
+                       fprintf(archivo1, "%s", ccc8);
+                       fprintf(archivo1, "part_name: %s",auxi->part_name);
+                       char *ccc188 = " | ";
+                       fprintf(archivo1, "%s", ccc188);
+                       fprintf(archivo1, "part_next: %d",auxi->part_next);
+                       char *ccc388 = " | ";
+                       fprintf(archivo1, "%s", ccc388);
+                       fprintf(archivo1, "part_size: %d",auxi->part_size);
+
+                       char *ccc883= " | ";
+                       fprintf(archivo1, "%s", ccc883);
+                       fprintf(archivo1, "part_start: %d",auxi->part_start);
+                       char *ccc8844 = " | ";
+                       fprintf(archivo1, "%s", ccc8844);
+                       fprintf(archivo1, "part_status: %d",auxi->part_status);
+
+                       char *cq9 = """\"];\n";
+                       fprintf(archivo1, "%s", cq9);
+
+                       auxi=auxi->siguiente;
+                    flor--;
+                    }
+
+                char *c7 = "}\n";
+                fprintf(archivo1, "%s", c7);
+
+            /*******************************************************************************************************************/
+        }
+
+
+        fclose(archivo1);
+
+    }
+void enviarebrs(char path1[200]){
+    mbr *mbr01=(mbr*)malloc(sizeof(mbr));
+     FILE *partc =fopen(path1,"r+b");
+
+    fseek(partc,0,SEEK_SET);
+    fread(mbr01,sizeof(mbr),1,partc);
+    fclose(partc);
+
+    if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
+        int inicio =mbr01->mbr_partition1.part_start;
+
+          FILE *archivo=fopen(path1,"rb+");
+          fseek(archivo,0,SEEK_SET);
+          mbr *aux2 =(mbr *)malloc(sizeof(mbr));
+          ebr *aux3=(ebr *)malloc(sizeof(ebr));
+          fread(aux2,sizeof(mbr),1,archivo);
+          fseek(archivo,inicio,SEEK_CUR);
+          fread(aux3,sizeof(ebr),1,archivo);
+          int o;
+          int bandera=0;
+
+          while(bandera==0){
+                    logsumasize=logsumasize+aux3->part_size;
+              lisebr(aux3->part_fit,aux3->part_name,aux3->part_next,aux3->part_size,aux3->part_start,aux3->part_status);
+            o=aux3->part_size;
+            fseek(archivo,o,SEEK_CUR);
+             if(aux3->part_next==-1){break;}
+             else{
+                 fseek(archivo,0,SEEK_CUR);
+                 fread(aux3,sizeof(ebr),1,archivo);
+             }
+          }
+
+          fclose(archivo);
+
+    }
+    if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
+
+        int inicio =mbr01->mbr_partition2.part_start;
+
+          FILE *archivo=fopen(path1,"rb+");
+          fseek(archivo,0,SEEK_SET);
+          mbr *aux2 =(mbr *)malloc(sizeof(mbr));
+          ebr *aux3=(ebr *)malloc(sizeof(ebr));
+          fread(aux2,sizeof(mbr),1,archivo);
+          fseek(archivo,inicio,SEEK_CUR);
+          fread(aux3,sizeof(ebr),1,archivo);
+          int o;
+          int bandera=0;
+
+          while(bandera==0){
+              logsumasize=logsumasize+aux3->part_size;
+              lisebr(aux3->part_fit,aux3->part_name,aux3->part_next,aux3->part_size,aux3->part_start,aux3->part_status);
+
+            o=aux3->part_size;
+            fseek(archivo,o,SEEK_CUR);
+             if(aux3->part_next==-1){break;}
+             else{
+                 fseek(archivo,0,SEEK_CUR);
+                 fread(aux3,sizeof(ebr),1,archivo);
+             }
+          }
+
+          fclose(archivo);
+    }
+    if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
+        int inicio =mbr01->mbr_partition3.part_start;
+
+          FILE *archivo=fopen(path1,"rb+");
+          fseek(archivo,0,SEEK_SET);
+          mbr *aux2 =(mbr *)malloc(sizeof(mbr));
+          ebr *aux3=(ebr *)malloc(sizeof(ebr));
+          fread(aux2,sizeof(mbr),1,archivo);
+          fseek(archivo,inicio,SEEK_CUR);
+          fread(aux3,sizeof(ebr),1,archivo);
+          int o;
+          int bandera=0;
+
+          while(bandera==0){
+              logsumasize=logsumasize+aux3->part_size;
+              lisebr(aux3->part_fit,aux3->part_name,aux3->part_next,aux3->part_size,aux3->part_start,aux3->part_status);
+
+            o=aux3->part_size;
+            fseek(archivo,o,SEEK_CUR);
+             if(aux3->part_next==-1){break;}
+             else{
+                 fseek(archivo,0,SEEK_CUR);
+                 fread(aux3,sizeof(ebr),1,archivo);
+             }
+          }
+
+          fclose(archivo);
+    }
+    if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
+        int inicio =mbr01->mbr_partition4.part_start;
+
+          FILE *archivo=fopen(path1,"rb+");
+          fseek(archivo,0,SEEK_SET);
+          mbr *aux2 =(mbr *)malloc(sizeof(mbr));
+          ebr *aux3=(ebr *)malloc(sizeof(ebr));
+          fread(aux2,sizeof(mbr),1,archivo);
+          fseek(archivo,inicio,SEEK_CUR);
+          fread(aux3,sizeof(ebr),1,archivo);
+          int o;
+          int bandera=0;
+
+          while(bandera==0){
+              logsumasize=logsumasize+aux3->part_size;
+              lisebr(aux3->part_fit,aux3->part_name,aux3->part_next,aux3->part_size,aux3->part_start,aux3->part_status);
+
+            o=aux3->part_size;
+            fseek(archivo,o,SEEK_CUR);
+             if(aux3->part_next==-1){break;}
+             else{
+                 fseek(archivo,0,SEEK_CUR);
+                 fread(aux3,sizeof(ebr),1,archivo);
+             }
+          }
+
+          fclose(archivo);
+    }
+
+
+}
+void addlistareportedisk(partition particion){
+    reportedisk *aux=(reportedisk*)malloc(sizeof(reportedisk));
+    aux->EsMbr=0;
+    strcpy(aux->part_fit,particion.part_fit);
+    strcpy(aux->part_name,particion.part_name);
+    aux->part_size=particion.part_size;
+    aux->part_start=particion.part_start;
+    aux->part_status=particion.part_status;
+    strcpy(aux->part_type,particion.part_type);
+    aux->siguiente=NULL;
+    aux->anterior=NULL;
+
+
+    if(reportedisk1->tam==0){
+        reportedisk1->primero=reportedisk1->ultimo=aux;
+        reportedisk1->tam++;
+    }
+    else{
+        aux->anterior=reportedisk1->ultimo;
+       reportedisk1->ultimo->siguiente=aux;
+       reportedisk1->ultimo=aux;
+       reportedisk1->tam++;
+    }
+
+}
+void repDISK(char*path1[200]){
+    mbr *mbr01=(mbr*)malloc(sizeof(mbr));
+     FILE *partc =fopen(path1,"r+b");
+
+    fseek(partc,0,SEEK_SET);
+    fread(mbr01,sizeof(mbr),1,partc);
+    fclose(partc);
+    int part1=mbr01->mbr_partition1.part_start+mbr01->mbr_partition1.part_size;
+    int part2=mbr01->mbr_partition2.part_start+mbr01->mbr_partition2.part_size;
+    int part3=mbr01->mbr_partition3.part_start+mbr01->mbr_partition3.part_size;
+    int part4=mbr01->mbr_partition4.part_start+mbr01->mbr_partition4.part_size;
+
+    int parti1=mbr01->mbr_partition1.part_start;
+    int parti2=mbr01->mbr_partition2.part_start;
+    int parti3=mbr01->mbr_partition3.part_start;
+    int parti4=mbr01->mbr_partition4.part_start;
+
+    int size1=mbr01->mbr_partition1.part_size;
+    int size2=mbr01->mbr_partition2.part_size;
+    int size3=mbr01->mbr_partition3.part_size;
+    int size4=mbr01->mbr_partition4.part_size;
+    /************************************************/
+    numcirr++;
+        char *nombre[200] ;
+        strcpy(nombre,"archivosMBR.dot");
+        FILE *archivo1 = fopen(nombre, "a");
+
+        char *c1 = "digraph html { abc [shape=none, margin=0,shape = record, color = lightblue, label=<<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" \n CELLPADDING=\"4\">\n <TR> \n <TD ROWSPAN=\"3\"><FONT COLOR=\"green\">MBR</FONT><BR/></TD> ";
+
+        fprintf(archivo1, "%s", c1);
+
+
+    //para uno menor
+    if((parti1<parti2 || size2<1) && (parti1<parti3|| size3<1) && (parti1<parti4|| size4<1) && mbr01->mbr_partition1.part_size>0){
+        //printf("\nDENTRO DE IF\n");
+        if(parti1==0){
+            if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+            char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+            fprintf(archivo1, "%s", l1);
+            }else{
+                char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                fprintf(archivo1, "%s", l1);
+            }
+        }else{
+            char *l1="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+            fprintf(archivo1, "%s", l1);
+            if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+            char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+            fprintf(archivo1, "%s", l1);
+            }else{
+                char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                fprintf(archivo1, "%s", l1);
+            }
+
+        }
+
+        if(size2<1 && size3<1 && size4<1 && part1<mbr01->mbr_tamanio){
+            char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+            fprintf(archivo1, "%s", l1);
+        }
+        //particion 2 menor
+        if((parti2<parti4|| size4<1) &&(parti2<parti3|| size3<1) && mbr01->mbr_partition2.part_size>0){
+            int j= part1-parti2;
+            if(j==0){
+                if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", l1);
+                }else{
+                    char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", l1);
+                }
+            }else{
+                char *l1="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                fprintf(archivo1, "%s", l1);
+                if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", l1);
+                }else{
+                    char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", l1);
+                }
+
+            }
+            if(size3<1 && size4<1 && part2<mbr01->mbr_tamanio){
+                char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                fprintf(archivo1, "%s", l1);
+            }
+            //particion 3 menor
+            if((parti3<parti4 || size4<1) && mbr01->mbr_partition3.part_size>0){
+                int j= parti3-part2;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                    char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", l1);
+                    }else{
+                        char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                    }
+                }else{
+                    char *l1="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", l1);
+                    if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                    char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", l1);
+                    }else{
+                        char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                    }
+
+                }
+                if(size4<1 && part3<mbr01->mbr_tamanio){
+                    char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", l1);
+                }    else  if(mbr01->mbr_partition4.part_size>0){
+                    int j= parti4-part3;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                        char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                        }else{
+                            char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", l1);
+                        }
+                    }else{
+                        char *l1="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", l1);
+                        if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                        char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                        }else{
+                            char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", l1);
+                        }
+
+                    }
+
+                    if(part4<mbr01->mbr_tamanio){
+                        char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", l1);
+                    }
+                }
+                     else if(part3<mbr01->mbr_tamanio){
+                    char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", l1);
+                }
+            }
+            //particion4 menor
+            if((parti4<parti3 || size3<1) && mbr01->mbr_partition4.part_size>0){
+                int j= parti4-part2;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                    char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", l1);
+                    }else{
+                        char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                    }
+                }else{
+                    char *l1="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", l1);
+                    if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                    char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", l1);
+                    }else{
+                        char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                    }
+
+                }
+                if(size3<1 && part4<mbr01->mbr_tamanio){
+                    char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", l1);
+                }    else  if(mbr01->mbr_partition3.part_size>0){
+                    int j= parti3-part4;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                        char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                        }else{
+                            char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", l1);
+                        }
+                    }else{
+                        char *l1="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", l1);
+                        if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                        char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                        }else{
+                            char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", l1);
+                        }
+
+                    }
+
+                    if(part3<mbr01->mbr_tamanio){
+                        char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", l1);
+                    }
+                }
+                    else if( part4<mbr01->mbr_tamanio){
+                    char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", l1);
+
+                }
+            }
+
+        }
+
+
+        /**********************************************************************************************************************/
+        //particion 3 menor
+        if((parti3<parti4|| size4<1) &&(parti3<parti2|| size2<1) && mbr01->mbr_partition3.part_size>0){
+            int j= part1-parti3;
+            if(j==0){
+                if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", l1);
+                }else{
+                    char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", l1);
+                }
+            }else{
+                char *l1="<TD RO3SPAN=\"3\">LIBRE</TD >\n";
+                fprintf(archivo1, "%s", l1);
+                if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", l1);
+                }else{
+                    char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", l1);
+                }
+
+            }
+            if(size2<1 && size4<1 && part3<mbr01->mbr_tamanio){
+                char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                fprintf(archivo1, "%s", l1);
+            }
+            //particion 2 menor
+            if((parti2<parti4 || size4<1) && mbr01->mbr_partition2.part_size>0){
+                int j= parti2-part3;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                    char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", l1);
+                    }else{
+                        char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                    }
+                }else{
+                    char *l1="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", l1);
+                    if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                    char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", l1);
+                    }else{
+                        char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                    }
+
+                }
+                if(size4<1 && part2<mbr01->mbr_tamanio){
+                    char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", l1);
+                }    else  if(mbr01->mbr_partition4.part_size>0){
+                    int j= parti4-part2;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                        char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                        }else{
+                            char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", l1);
+                        }
+                    }else{
+                        char *l1="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", l1);
+                        if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                        char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                        }else{
+                            char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", l1);
+                        }
+
+                    }
+
+                    if(part4<mbr01->mbr_tamanio){
+                        char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", l1);
+                    }
+                }
+                     else if(part2<mbr01->mbr_tamanio){
+                    char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", l1);
+                }
+            }
+            //particion4 menor
+            if((parti4<parti2 || size2<1) && mbr01->mbr_partition4.part_size>0){
+                int j= parti4-part3;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                    char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", l1);
+                    }else{
+                        char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                    }
+                }else{
+                    char *l1="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", l1);
+                    if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                    char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", l1);
+                    }else{
+                        char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                    }
+
+                }
+                if(size2<1 && part4<mbr01->mbr_tamanio){
+                    char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", l1);
+                }    else  if(mbr01->mbr_partition2.part_size>0){
+                    int j= parti2-part4;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                        char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                        }else{
+                            char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", l1);
+                        }
+                    }else{
+                        char *l1="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", l1);
+                        if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                        char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                        }else{
+                            char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", l1);
+                        }
+
+                    }
+
+                    if(part2<mbr01->mbr_tamanio){
+                        char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", l1);
+                    }
+                }
+                    else if( part4<mbr01->mbr_tamanio){
+                    char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", l1);
+
+                }
+            }
+
+        }
+        /**********************************************************************************************************************/
+
+
+        /***********************************************************************************************************/
+        //particion 4 menor
+        if((parti4<parti2|| size2<1) &&(parti4<parti3|| size3<1) && mbr01->mbr_partition4.part_size>0){
+            int j= part1-parti4;
+            if(j==0){
+                if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", l1);
+                }else{
+                    char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", l1);
+                }
+            }else{
+                char *l1="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                fprintf(archivo1, "%s", l1);
+                if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", l1);
+                }else{
+                    char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", l1);
+                }
+
+            }
+            if(size3<1 && size2<1 && part4<mbr01->mbr_tamanio){
+                char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                fprintf(archivo1, "%s", l1);
+            }
+            //particion 3 menor
+            if((parti3<parti2 || size2<1) && mbr01->mbr_partition3.part_size>0){
+                int j= parti3-part4;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                    char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", l1);
+                    }else{
+                        char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                    }
+                }else{
+                    char *l1="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", l1);
+                    if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                    char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", l1);
+                    }else{
+                        char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                    }
+
+                }
+                if(size2<1 && part3<mbr01->mbr_tamanio){
+                    char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", l1);
+                }    else  if(mbr01->mbr_partition2.part_size>0){
+                    int j= parti2-part3;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                        char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                        }else{
+                            char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", l1);
+                        }
+                    }else{
+                        char *l1="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", l1);
+                        if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                        char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                        }else{
+                            char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", l1);
+                        }
+
+                    }
+
+                    if(part2<mbr01->mbr_tamanio){
+                        char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", l1);
+                    }
+                }
+                     else if(part3<mbr01->mbr_tamanio){
+                    char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", l1);
+                }
+            }
+            //particion2 menor
+            if((parti2<parti3 || size3<1) && mbr01->mbr_partition2.part_size>0){
+                int j= parti2-part4;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                    char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", l1);
+                    }else{
+                        char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                    }
+                }else{
+                    char *l1="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", l1);
+                    if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                    char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", l1);
+                    }else{
+                        char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                    }
+
+                }
+                if(size3<1 && part2<mbr01->mbr_tamanio){
+                    char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", l1);
+                }    else  if(mbr01->mbr_partition3.part_size>0){
+                    int j= parti3-part2;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                        char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                        }else{
+                            char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", l1);
+                        }
+                    }else{
+                        char *l1="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", l1);
+                        if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                        char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", l1);
+                        }else{
+                            char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", l1);
+                        }
+
+                    }
+
+                    if(part3<mbr01->mbr_tamanio){
+                        char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", l1);
+                    }
+                }
+                    else if( part2<mbr01->mbr_tamanio){
+                    char *l1="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", l1);
+
+                }
+            }
+
+        }
+
+        /***********************************************************************************************************/
+
+
+    }
+
+
+
+
+    //para dos menor
+    if((parti2<parti1 || size1<1) && (parti2<parti3|| size3<1) && (parti2<parti4|| size4<1) && mbr01->mbr_partition2.part_size>0){
+       // printf("\nDENTRO DE IF\n");
+        if(parti2==0){
+            if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+            char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+            fprintf(archivo1, "%s", lq);
+            }else{
+                char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                fprintf(archivo1, "%s", lq);
+            }
+        }else{
+            char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+            fprintf(archivo1, "%s", lq);
+            if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+            char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+            fprintf(archivo1, "%s", lq);
+            }else{
+                char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                fprintf(archivo1, "%s", lq);
+            }
+
+        }
+
+        if(size1<1 && size3<1 && size4<1 && part2<mbr01->mbr_tamanio){
+            char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+            fprintf(archivo1, "%s", lq);
+        }
+        //particion 1 menor
+        if((parti1<parti4|| size4<1) &&(parti1<parti3|| size3<1) && mbr01->mbr_partition1.part_size>0){
+            int j= part2-parti1;
+            if(j==0){
+                if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", lq);
+                }else{
+                    char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+            }else{
+                char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                fprintf(archivo1, "%s", lq);
+                if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", lq);
+                }else{
+                    char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+
+            }
+            if(size3<1 && size4<1 && part1<mbr01->mbr_tamanio){
+                char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                fprintf(archivo1, "%s", lq);
+            }
+            //particion 3 menor
+            if((parti3<parti4 || size4<1) && mbr01->mbr_partition3.part_size>0){
+                int j= parti3-part1;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }else{
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", lq);
+                    if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+
+                }
+                if(size4<1 && part3<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }    else  if(mbr01->mbr_partition4.part_size>0){
+                    int j= parti4-part3;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+                    }else{
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", lq);
+                        if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+
+                    }
+
+                    if(part4<mbr01->mbr_tamanio){
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }
+                     else if(part3<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+            }
+            //particion4 menor
+            if((parti4<parti3 || size3<1) && mbr01->mbr_partition4.part_size>0){
+                int j= parti4-part1;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }else{
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", lq);
+                    if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+
+                }
+                if(size3<1 && part4<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }    else  if(mbr01->mbr_partition3.part_size>0){
+                    int j= parti3-part4;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+                    }else{
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", lq);
+                        if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+
+                    }
+
+                    if(part3<mbr01->mbr_tamanio){
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }
+                    else if( part4<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+
+                }
+            }
+
+        }
+
+
+        /**********************************************************************************************************************/
+        //particion 3 menor
+        if((parti3<parti4|| size4<1) &&(parti3<parti1|| size1<1) && mbr01->mbr_partition3.part_size>0){
+            int j= part2-parti3;
+            if(j==0){
+                if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", lq);
+                }else{
+                    char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+            }else{
+                char *lq="<TD RO3SPAN=\"3\">LIBRE</TD >\n";
+                fprintf(archivo1, "%s", lq);
+                if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", lq);
+                }else{
+                    char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+
+            }
+            if(size1<1 && size4<1 && part3<mbr01->mbr_tamanio){
+                char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                fprintf(archivo1, "%s", lq);
+            }
+            //particion 1 menor
+            if((parti1<parti4 || size4<1) && mbr01->mbr_partition1.part_size>0){
+                int j= parti1-part3;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }else{
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", lq);
+                    if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+
+                }
+                if(size4<1 && part1<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }    else  if(mbr01->mbr_partition4.part_size>0){
+                    int j= parti4-part1;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+                    }else{
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", lq);
+                        if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+
+                    }
+
+                    if(part4<mbr01->mbr_tamanio){
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }
+                     else if(part1<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+            }
+            //particion4 menor
+            if((parti4<parti1 || size1<1) && mbr01->mbr_partition4.part_size>0){
+                int j= parti4-part3;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }else{
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", lq);
+                    if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+
+                }
+                if(size1<1 && part4<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }    else  if(mbr01->mbr_partition1.part_size>0){
+                    int j= parti1-part4;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+                    }else{
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", lq);
+                        if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+
+                    }
+
+                    if(part1<mbr01->mbr_tamanio){
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }
+                    else if( part4<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+
+                }
+            }
+
+        }
+        /**********************************************************************************************************************/
+
+
+        /***********************************************************************************************************/
+        //particion 4 menor
+        if((parti4<parti1|| size1<1) &&(parti4<parti3|| size3<1) && mbr01->mbr_partition4.part_size>0){
+            int j= part2-parti4;
+            if(j==0){
+                if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", lq);
+                }else{
+                    char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+            }else{
+                char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                fprintf(archivo1, "%s", lq);
+                if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", lq);
+                }else{
+                    char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+
+            }
+            if(size3<1 && size1<1 && part4<mbr01->mbr_tamanio){
+                char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                fprintf(archivo1, "%s", lq);
+            }
+            //particion 3 menor
+            if((parti3<parti1 || size1<1) && mbr01->mbr_partition3.part_size>0){
+                int j= parti3-part4;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }else{
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", lq);
+                    if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+
+                }
+                if(size1<1 && part3<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }    else  if(mbr01->mbr_partition1.part_size>0){
+                    int j= parti1-part3;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+                    }else{
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", lq);
+                        if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+
+                    }
+
+                    if(part1<mbr01->mbr_tamanio){
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }
+                     else if(part3<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+            }
+            //particion1 menor
+            if((parti1<parti3 || size3<1) && mbr01->mbr_partition1.part_size>0){
+                int j= parti1-part4;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }else{
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", lq);
+                    if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+
+                }
+                if(size3<1 && part1<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }    else  if(mbr01->mbr_partition3.part_size>0){
+                    int j= parti3-part1;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+                    }else{
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", lq);
+                        if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+
+                    }
+
+                    if(part3<mbr01->mbr_tamanio){
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }
+                    else if( part1<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+
+                }
+            }
+
+        }
+
+        /***********************************************************************************************************/
+
+
+    }
+
+   //para tres menor
+    if((parti3<parti1 || size1<1) && (parti3<parti2|| size2<1) && (parti3<parti4|| size4<1) && mbr01->mbr_partition3.part_size>0){
+       // printf("\nDENTRO DE IF\n");
+        if(parti3==0){
+            if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+            char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+            fprintf(archivo1, "%s", lq);
+            }else{
+                char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                fprintf(archivo1, "%s", lq);
+            }
+        }else{
+            char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+            fprintf(archivo1, "%s", lq);
+            if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+            char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+            fprintf(archivo1, "%s", lq);
+            }else{
+                char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                fprintf(archivo1, "%s", lq);
+            }
+
+        }
+
+        if(size1<1 && size2<1 && size4<1 && part3<mbr01->mbr_tamanio){
+            char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+            fprintf(archivo1, "%s", lq);
+        }
+        //particion 1 menor
+        if((parti1<parti4|| size4<1) &&(parti1<parti2|| size2<1) && mbr01->mbr_partition1.part_size>0){
+            int j= part3-parti1;
+            if(j==0){
+                if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", lq);
+                }else{
+                    char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+            }else{
+                char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                fprintf(archivo1, "%s", lq);
+                if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", lq);
+                }else{
+                    char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+
+            }
+            if(size2<1 && size4<1 && part1<mbr01->mbr_tamanio){
+                char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                fprintf(archivo1, "%s", lq);
+            }
+            //particion 2 menor
+            if((parti2<parti4 || size4<1) && mbr01->mbr_partition2.part_size>0){
+                int j= parti2-part1;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }else{
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", lq);
+                    if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+
+                }
+                if(size4<1 && part2<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }    else  if(mbr01->mbr_partition4.part_size>0){
+                    int j= parti4-part2;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+                    }else{
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", lq);
+                        if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+
+                    }
+
+                    if(part4<mbr01->mbr_tamanio){
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }
+                     else if(part2<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+            }
+            //particion4 menor
+            if((parti4<parti2 || size2<1) && mbr01->mbr_partition4.part_size>0){
+                int j= parti4-part1;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }else{
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", lq);
+                    if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+
+                }
+                if(size2<1 && part4<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }    else  if(mbr01->mbr_partition2.part_size>0){
+                    int j= parti2-part4;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+                    }else{
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", lq);
+                        if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+
+                    }
+
+                    if(part2<mbr01->mbr_tamanio){
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }
+                    else if( part4<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+
+                }
+            }
+
+        }
+
+
+        /**********************************************************************************************************************/
+        //particion 2 menor
+        if((parti2<parti4|| size4<1) &&(parti2<parti1|| size1<1) && mbr01->mbr_partition2.part_size>0){
+            int j= part3-parti2;
+            if(j==0){
+                if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", lq);
+                }else{
+                    char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+            }else{
+                char *lq="<TD RO2SPAN=\"3\">LIBRE</TD >\n";
+                fprintf(archivo1, "%s", lq);
+                if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", lq);
+                }else{
+                    char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+
+            }
+            if(size1<1 && size4<1 && part2<mbr01->mbr_tamanio){
+                char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                fprintf(archivo1, "%s", lq);
+            }
+            //particion 1 menor
+            if((parti1<parti4 || size4<1) && mbr01->mbr_partition1.part_size>0){
+                int j= parti1-part2;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }else{
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", lq);
+                    if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+
+                }
+                if(size4<1 && part1<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }    else  if(mbr01->mbr_partition4.part_size>0){
+                    int j= parti4-part1;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+                    }else{
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", lq);
+                        if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+
+                    }
+
+                    if(part4<mbr01->mbr_tamanio){
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }
+                     else if(part1<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+            }
+            //particion4 menor
+            if((parti4<parti1 || size1<1) && mbr01->mbr_partition4.part_size>0){
+                int j= parti4-part2;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }else{
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", lq);
+                    if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+
+                }
+                if(size1<1 && part4<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }    else  if(mbr01->mbr_partition1.part_size>0){
+                    int j= parti1-part4;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+                    }else{
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", lq);
+                        if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+
+                    }
+
+                    if(part1<mbr01->mbr_tamanio){
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }
+                    else if( part4<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+
+                }
+            }
+
+        }
+        /**********************************************************************************************************************/
+
+
+        /***********************************************************************************************************/
+        //particion 4 menor
+        if((parti4<parti1|| size1<1) &&(parti4<parti2|| size2<1) && mbr01->mbr_partition4.part_size>0){
+            int j= part3-parti4;
+            if(j==0){
+                if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", lq);
+                }else{
+                    char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+            }else{
+                char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                fprintf(archivo1, "%s", lq);
+                if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+                char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", lq);
+                }else{
+                    char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+
+            }
+            if(size2<1 && size1<1 && part4<mbr01->mbr_tamanio){
+                char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                fprintf(archivo1, "%s", lq);
+            }
+            //particion 2 menor
+            if((parti2<parti1 || size1<1) && mbr01->mbr_partition2.part_size>0){
+                int j= parti2-part4;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }else{
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", lq);
+                    if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+
+                }
+                if(size1<1 && part2<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }    else  if(mbr01->mbr_partition1.part_size>0){
+                    int j= parti1-part2;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+                    }else{
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", lq);
+                        if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+
+                    }
+
+                    if(part1<mbr01->mbr_tamanio){
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }
+                     else if(part2<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+            }
+            //particion1 menor
+            if((parti1<parti2 || size2<1) && mbr01->mbr_partition1.part_size>0){
+                int j= parti1-part4;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }else{
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", lq);
+                    if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+
+                }
+                if(size2<1 && part1<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }    else  if(mbr01->mbr_partition2.part_size>0){
+                    int j= parti2-part1;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+                    }else{
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", lq);
+                        if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+
+                    }
+
+                    if(part2<mbr01->mbr_tamanio){
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }
+                    else if( part1<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+
+                }
+            }
+
+        }
+
+        /***********************************************************************************************************/
+
+
+    }
+
+  //para cuatro menor
+    if((parti4<parti1 || size1<1) && (parti4<parti3|| size3<1) && (parti4<parti2|| size2<1) && mbr01->mbr_partition4.part_size>0){
+        //printf("\nDENTRO DE IF\n");
+        if(parti4==0){
+            if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+            char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+            fprintf(archivo1, "%s", lq);
+            }else{
+                char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                fprintf(archivo1, "%s", lq);
+            }
+        }else{
+            char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+            fprintf(archivo1, "%s", lq);
+            if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
+            char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+            fprintf(archivo1, "%s", lq);
+            }else{
+                char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                fprintf(archivo1, "%s", lq);
+            }
+
+        }
+
+        if(size1<1 && size3<1 && size2<1 && part4<mbr01->mbr_tamanio){
+            char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+            fprintf(archivo1, "%s", lq);
+        }
+        //particion 1 menor
+        if((parti1<parti2|| size2<1) &&(parti1<parti3|| size3<1) && mbr01->mbr_partition1.part_size>0){
+            int j= part4-parti1;
+            if(j==0){
+                if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", lq);
+                }else{
+                    char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+            }else{
+                char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                fprintf(archivo1, "%s", lq);
+                if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", lq);
+                }else{
+                    char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+
+            }
+            if(size3<1 && size2<1 && part1<mbr01->mbr_tamanio){
+                char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                fprintf(archivo1, "%s", lq);
+            }
+            //particion 3 menor
+            if((parti3<parti2 || size2<1) && mbr01->mbr_partition3.part_size>0){
+                int j= parti3-part1;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }else{
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", lq);
+                    if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+
+                }
+                if(size2<1 && part3<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }    else  if(mbr01->mbr_partition2.part_size>0){
+                    int j= parti2-part3;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+                    }else{
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", lq);
+                        if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+
+                    }
+
+                    if(part2<mbr01->mbr_tamanio){
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }
+                     else if(part3<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+            }
+            //particion2 menor
+            if((parti2<parti3 || size3<1) && mbr01->mbr_partition2.part_size>0){
+                int j= parti2-part1;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }else{
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", lq);
+                    if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+
+                }
+                if(size3<1 && part2<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }    else  if(mbr01->mbr_partition3.part_size>0){
+                    int j= parti3-part2;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+                    }else{
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", lq);
+                        if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+
+                    }
+
+                    if(part3<mbr01->mbr_tamanio){
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }
+                    else if( part2<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+
+                }
+            }
+
+        }
+
+
+        /**********************************************************************************************************************/
+        //particion 3 menor
+        if((parti3<parti2|| size2<1) &&(parti3<parti1|| size1<1) && mbr01->mbr_partition3.part_size>0){
+            int j= part4-parti3;
+            if(j==0){
+                if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", lq);
+                }else{
+                    char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+            }else{
+                char *lq="<TD RO3SPAN=\"3\">LIBRE</TD >\n";
+                fprintf(archivo1, "%s", lq);
+                if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", lq);
+                }else{
+                    char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+
+            }
+            if(size1<1 && size2<1 && part3<mbr01->mbr_tamanio){
+                char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                fprintf(archivo1, "%s", lq);
+            }
+            //particion 1 menor
+            if((parti1<parti2 || size2<1) && mbr01->mbr_partition1.part_size>0){
+                int j= parti1-part3;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }else{
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", lq);
+                    if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+
+                }
+                if(size2<1 && part1<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }    else  if(mbr01->mbr_partition2.part_size>0){
+                    int j= parti2-part1;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+                    }else{
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", lq);
+                        if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+
+                    }
+
+                    if(part2<mbr01->mbr_tamanio){
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }
+                     else if(part1<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+            }
+            //particion2 menor
+            if((parti2<parti1 || size1<1) && mbr01->mbr_partition2.part_size>0){
+                int j= parti2-part3;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }else{
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", lq);
+                    if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+
+                }
+                if(size1<1 && part2<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }    else  if(mbr01->mbr_partition1.part_size>0){
+                    int j= parti1-part2;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+                    }else{
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", lq);
+                        if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+
+                    }
+
+                    if(part1<mbr01->mbr_tamanio){
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }
+                    else if( part2<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+
+                }
+            }
+
+        }
+        /**********************************************************************************************************************/
+
+
+        /***********************************************************************************************************/
+        //particion 2 menor
+        if((parti2<parti1|| size1<1) &&(parti2<parti3|| size3<1) && mbr01->mbr_partition2.part_size>0){
+            int j= part4-parti2;
+            if(j==0){
+                if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", lq);
+                }else{
+                    char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+            }else{
+                char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                fprintf(archivo1, "%s", lq);
+                if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+                char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                fprintf(archivo1, "%s", lq);
+                }else{
+                    char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+
+            }
+            if(size3<1 && size1<1 && part2<mbr01->mbr_tamanio){
+                char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                fprintf(archivo1, "%s", lq);
+            }
+            //particion 3 menor
+            if((parti3<parti1 || size1<1) && mbr01->mbr_partition3.part_size>0){
+                int j= parti3-part2;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }else{
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", lq);
+                    if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+
+                }
+                if(size1<1 && part3<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }    else  if(mbr01->mbr_partition1.part_size>0){
+                    int j= parti1-part3;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+                    }else{
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", lq);
+                        if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+
+                    }
+
+                    if(part1<mbr01->mbr_tamanio){
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }
+                     else if(part3<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }
+            }
+            //particion1 menor
+            if((parti1<parti3 || size3<1) && mbr01->mbr_partition1.part_size>0){
+                int j= parti1-part2;
+                if(j==0){
+                    if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }else{
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                    fprintf(archivo1, "%s", lq);
+                    if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+                    char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                    fprintf(archivo1, "%s", lq);
+                    }else{
+                        char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+
+                }
+                if(size3<1 && part1<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+                }    else  if(mbr01->mbr_partition3.part_size>0){
+                    int j= parti3-part1;
+                    if(j==0){
+                        if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+                    }else{
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD >\n";
+                        fprintf(archivo1, "%s", lq);
+                        if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
+                        char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
+                        fprintf(archivo1, "%s", lq);
+                        }else{
+                            char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
+                            fprintf(archivo1, "%s", lq);
+                        }
+
+                    }
+
+                    if(part3<mbr01->mbr_tamanio){
+                        char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                        fprintf(archivo1, "%s", lq);
+                    }
+                }
+                    else if( part1<mbr01->mbr_tamanio){
+                    char *lq="<TD ROWSPAN=\"3\">LIBRE</TD>";
+                    fprintf(archivo1, "%s", lq);
+
+                }
+            }
+
+        }
+
+        /***********************************************************************************************************/
+
+
+    }
+
+
+
+        if(listalogicas->tam>0){
+            char *cq9 = "</TR><TR>";
+            fprintf(archivo1, "%s", cq9);
+            int aa =listalogicas->tam;
+
+            while(aa>=1){
+
+                char *cq9 = "<TD>EBR</TD><TD>Logica</TD>";
+                fprintf(archivo1, "%s", cq9);
+                aa--;
+            }
+
+
+
+
+        }
+
+    char *cq9 = "</TR></TABLE>>];\n";
+    fprintf(archivo1, "%s", cq9);
+    fclose(archivo1);
+
+
+
+
+}
+void vaciarlistadereportes(){
+    reportedisk1->primero=NULL;
+    reportedisk1->ultimo=NULL;
+    reportedisk1->tam=0;
+}
+void vaciarlisebr(){
+    listalogicas->primero=NULL;
+    listalogicas->ultimo=NULL;
+    listalogicas->tam=0;
+}
+void lisebr(char*fit[10],char*name[30],int next,int size, int start, int status){
+    nodolistaebr*nuevo =(nodolistaebr*)malloc(sizeof(nodolistaebr));
+    nuevo->anterior=NULL;
+    nuevo->siguiente=NULL;
+    strcpy(nuevo->part_fit,fit);
+    strcpy(nuevo->part_name,name);
+    nuevo->part_next=next;
+    nuevo->part_size=size;
+    nuevo->part_start=start;
+    nuevo->part_status=status;
+    if(listalogicas->tam==0){
+        listalogicas->primero=listalogicas->ultimo=nuevo;
+        listalogicas->tam++;
+    }else{
+        nuevo->anterior=listalogicas->ultimo;
+        listalogicas->ultimo->siguiente=nuevo;
+        listalogicas->ultimo=nuevo;
+        listalogicas->tam++;
+    }
+
+
+}
 
 
 //FIN METODOS FASE 1
