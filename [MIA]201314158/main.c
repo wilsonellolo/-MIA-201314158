@@ -211,7 +211,11 @@ if(strstr(cadena,"#")){
             rmdisk(token);
         }
         else if(strcmp(token,"fdisk")==0){
+       // printf("COMANDOS LEIDOS!!!!!! ANTES FDISK--\n");
+
             fdisk(token);
+       // printf("COMANDOS LEIDOS!!!!!! DESPUES FDISK--\n");
+
         }
         else if(strcmp(token,"mount")==0){
 
@@ -301,7 +305,7 @@ if(strstr(comprobarcadena,"\"/") && strstr(comprobarcadena,".sh\"")){
         strcpy(cadena,quitarsalto);
 
         EsExec==1;
-
+       // printf("COMANDOS LEIDOS!!!!!!--%s\n",cadena);
        leerComandos(cadena);
 
         EsExec=0;
@@ -586,7 +590,9 @@ return 1;
 
 }
 int fdisk(char *token){
+//printf("ENTRO 1");
 if(strstr(comprobarcadena,"\"/") && strstr(comprobarcadena,".dsk\"")){
+//printf("ENTRO 2");
     }else{printf("\nError en el comando\n"); return -1;}
     int    op = 0;
     int    size1=0;
@@ -610,7 +616,7 @@ if(strstr(comprobarcadena,"\"/") && strstr(comprobarcadena,".dsk\"")){
     if(strstr(comprobarcadena,"-size")){
 
        if(strstr(comprobarcadena,"-path") && strstr(comprobarcadena,"-name")){
-
+   //printf("ENTRO 3");
        }else{
            printf("\nFalta Informacion\n");
            return -1;
@@ -761,6 +767,7 @@ if(strstr(comprobarcadena,"\"/") && strstr(comprobarcadena,".dsk\"")){
         }
 
     }
+ //   printf("ENTRO 1 slio while");
 
     mbr* mbraux=(mbr*)malloc(sizeof(mbr));
     FILE* file = fopen(path1,"r+b");
@@ -825,11 +832,19 @@ if(strstr(comprobarcadena,"\"/") && strstr(comprobarcadena,".dsk\"")){
 
     //SI SE CREA UNA NUEVA PARTICION
     if(size1>0){
+   // printf("ENTRO en size>0");
     //VEROFOCANDO QUE EL NOMBRE NO EXISTA AUN
-    if(strcmp(mbraux->mbr_partition1.part_name,name1)==0 && strcmp(mbraux->mbr_partition2.part_name,name1)==0 && strcmp(mbraux->mbr_partition3.part_name,name1)==0 && strcmp(mbraux->mbr_partition4.part_name,name1)==0){
+    if(strcmp(mbraux->mbr_partition1.part_name,name1)==0 || strcmp(mbraux->mbr_partition2.part_name,name1)==0 || strcmp(mbraux->mbr_partition3.part_name,name1)==0 || strcmp(mbraux->mbr_partition4.part_name,name1)==0){
           printf("/nnombre de particion ya existe/n");
           return -1;
        }
+       if(mbraux->mbr_partition1.part_size>0 && mbraux->mbr_partition2.part_size>0 && mbraux->mbr_partition3.part_size>0 && mbraux->mbr_partition4.part_size>0){
+       printf("/nYa Existen cuatro particiones, ya no cabe otra/n");
+
+       }
+
+
+      if(strcmp("l",type1)!=0){
         //SI PARTICION UNO ESTA VACIA
       if(mbr01->mbr_partition1.part_size==0){
 
@@ -971,7 +986,7 @@ printf("\nParticion Creada Con exito\n");
 
            //SI PARTICION CUATRO ESTA VACIA
         else if(mbr01->mbr_partition4.part_size==0){
-
+      //   printf("ENTRO particion cuatro");
         int inicio=0;
         inicio=IniciarParticion(mbraux->mbr_partition1.part_start,mbraux->mbr_partition1.part_size,mbraux->mbr_partition3.part_start,mbraux->mbr_partition3.part_size,mbraux->mbr_partition2.part_start,mbraux->mbr_partition2.part_size,size1,mbraux->mbr_tamanio);
 
@@ -1013,7 +1028,7 @@ printf("\nParticion Creada Con exito\n");
     }
     printf("\nParticion Creada Con exito\n");
    }
-
+}
    if(strcmp("l",type1)==0){
 
 /*******************************************************************************************************************************************************************************************************************************/
@@ -3718,7 +3733,7 @@ void repDISK(char*path1[200]){
 
     //para uno menor
     if((parti1<parti2 || size2<1) && (parti1<parti3|| size3<1) && (parti1<parti4|| size4<1) && mbr01->mbr_partition1.part_size>0){
-       printf("\nDENTRO DE IF UNO MENOR\n");
+      /// printf("\nDENTRO DE IF UNO MENOR\n");
 
         if(parti1==0){
 
