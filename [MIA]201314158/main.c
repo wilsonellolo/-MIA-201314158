@@ -98,8 +98,11 @@ listareportedisk * reportedisk1;
 listaebr *listalogicas;
 int logsumasize=0;
 int lognombreexiste=0;
+int globalcu=0;
 char* comprobarcadena[200];
 int numcirr;
+int EsExec=0;
+
 int main(){
 
 //INICIAR TODAS LAS ESTRUCTURAS
@@ -153,7 +156,7 @@ int main(){
 
 //METODOS FASE 1
 int leerComandos(char *cadena[300]){
-   char CadenaSalto[100];
+   char CadenaSalto[200];
     char Comando[300];
     strcpy(CadenaSalto,"");
 
@@ -164,8 +167,8 @@ if(strstr(cadena,"#")){
         int HaySalto =0;
 
         while(strstr(cadena,"\\")){
-            char *token =strtok(cadena,"\\\n\t");
-            strcat(CadenaSalto,token);
+            char *token1 =strtok(cadena,"\\");
+            strcat(CadenaSalto,token1);
             strcat(CadenaSalto," ");
             fgets(cadena,300,stdin);
             HaySalto=1;
@@ -184,6 +187,8 @@ if(strstr(cadena,"#")){
 
        //COMANDO YA TIENE LA CADENA COMPLETA;
 
+      // printf("\n-----------------------------CADENA COMPLETA:   %s\n",Comando);
+
        char *Minuscula;
        for(Minuscula = Comando; *Minuscula; Minuscula++){
             *Minuscula = tolower((unsigned char)*Minuscula);
@@ -200,6 +205,7 @@ if(strstr(cadena,"#")){
 
         if(strcmp(token,"mkdisk")==0){
             mkdisk(token);
+            printf("-------PASO-----\n");
         }
         else if(strcmp(token,"rmdisk")==0){
             rmdisk(token);
@@ -222,17 +228,21 @@ if(strstr(cadena,"#")){
 
             exec(token);
 
-        } else if(strcmp(cadena,"\n")==0){ return 8;}
+        } else if(strcmp(cadena,"\n")==0){ }
         return 0;
 }
 int exec (char *token){
+if(strstr(comprobarcadena,"\"/") && strstr(comprobarcadena,".sh\"")){
+    }else{printf("\nError al directorio compruebe la extension .sh\n"); return -1;}
 
     char path[150]="";
     int veces=0;
 
     while(token!=NULL){
-        token=strtok(NULL," :\"\n");
+       // printf(" ejecucion1-------------------------------%s \n",token);
 
+        token=strtok(NULL,":\"\n");
+      //  printf(" ejecucion2-------------------------------%s \n",token);
         if(token==NULL){
             break;
         }
@@ -255,20 +265,54 @@ int exec (char *token){
     }
 
     while(c1=fgets(cadena,200,file1)){
+
+    /***********************************************************************************************************/
+        int  HaySalto=0;
+        char CadenaSalto[200];
+        char Comando1[200];
+
+        strcpy(CadenaSalto,"");
+
+        while(strstr(cadena,"\\")){
+            char *token1 =strtok(cadena,"\\");
+            strcat(CadenaSalto,token1);
+            strcat(CadenaSalto," ");
+            fgets(cadena,200,file1);
+            HaySalto=1;
+        }
+
+        if(HaySalto==1){
+            strcat(CadenaSalto,cadena);
+            strcat(cadena,CadenaSalto);
+            //strcat(Comando,cadena);
+        }
+
+        strcpy(CadenaSalto,"");
+
+    /*********************************************************************************************************************************/
+
+
+
     if(strstr(cadena,"-")||strstr(cadena,"m")||strstr(cadena,"i")||strstr(cadena,"u")||strstr(cadena,"s")||strstr(cadena,"+")||strstr(cadena,"f")){}
     else{break;}
        printf("%s\n",cadena);
        char *quitarsalto=strtok(cadena,"\n\t");
+
         strcpy(cadena,quitarsalto);
+
+        EsExec==1;
 
        leerComandos(cadena);
 
+        EsExec=0;
     }
        fclose(file1);
 
 return 0;
 }
 int mkdisk(char*token){
+if(strstr(comprobarcadena,"\"/") || strstr(comprobarcadena,"/\"")){
+    }else{printf("\nError en el comando\n"); return -1;}
 
 char size[20]="-size";
 char unit[20]="+unit";
@@ -276,9 +320,11 @@ char path[20]="-path";
 char name[20]="-name";
 
 //COMPROBANDO QUE TIENE LOS PARAMETROS OBLIGATORIOS
-if(strstr(comprobarcadena,size) &&strstr(comprobarcadena,name)&& strstr(comprobarcadena,path)){
+//printf("LA CADENA ES %s\n",comprobarcadena);
+if(strstr(comprobarcadena,size) &&strstr(comprobarcadena,name)&& strstr(comprobarcadena,path) && strstr(comprobarcadena,".dsk\"")&& strstr(comprobarcadena,"/\"")&& strstr(comprobarcadena,"\"/home")){
+//printf("PROBANDO UNO\n");
 }else{
-printf("\nComando No cuenta con parametros minimos\n");
+printf("\nComando NO cuenta con parametros minimos o mal escritos\n");
 return -1;
 }
 
@@ -315,7 +361,7 @@ while(token !=NULL){
     case 1:
         token = strtok(NULL," :");
         tamanioDeDisco=atoi(token);
-        if(tamanioDeDisco <=0){
+        if(tamanioDeDisco <=9){
             printf("\nTamaño De Disco Invalido\n");
          return -1;
         }
@@ -330,29 +376,33 @@ while(token !=NULL){
         }
         break;
      case 3:
-
-        token = strtok(NULL," ::");
-
+       // printf("token1  ------%s\n",token);
+        //token=strtok(NULL,":\"\n");
+       // token = strtok(NULL," ");
+        token=strtok(NULL,":\"\n");
         if(strstr(token,comillas)){
-
-            token=strtok(NULL,"\"");
+            printf("token3  ------%s\n",token);
             strcpy(dpth,token);
             strcpy(dpth2,dpth);
             strcpy(dpth3,dpth);
         }else{
+            //token = strtok(NULL,":");
             strcpy(dpth,token);
             strcpy(dpth2,token);
             strcpy(dpth3,token);
         }
+      //  printf("dpth %s\n",dpth);
+       // printf("dpth2 %s\n",dpth2);
+       // printf("dpth3 %s\n",dpth3);
 
         break;
 
 
     case 4:
-        token = strtok(NULL," ::");
-
+        //token = strtok(NULL," ::");
+        token=strtok(NULL,":\"\n");
         if(strstr(token,comillas)){
-            token=strtok(NULL,"\"");
+          //  token=strtok(NULL,"\"");
             strcpy(Nombre,token);
 
         }else{
@@ -377,6 +427,12 @@ while(token !=NULL){
         break;
     }
 }
+
+        //VERIFICANDO PATH QUE SEA CORRECTO
+        if((tamanioDeDisco <=9 && strcmp(unitletra,"m")==0)||(tamanioDeDisco <10240 && strcmp(unitletra,"k")==0)){
+            printf("\nEl tamaño de disco debe ser mayor a 9MB o mayor a 10240KB\n");
+         return -1;
+        }
     //SE CREA EL PATH
 
     strcat(dpth,Nombre);
@@ -474,7 +530,10 @@ return 1;
 
 }
 int rmdisk(char *token){
+if(strstr(comprobarcadena,"\"/") && strstr(comprobarcadena,".dsk\"")){
+    }else{printf("\nError en el comando\n"); return -1;}
     token = strtok(NULL," :");
+
 char* path[200];
 
 if(strstr(token,"-path")){
@@ -485,12 +544,13 @@ else{
     return -1;
 }
 
-token =strtok(NULL,":");
+//token =strtok(NULL,":");
+token=strtok(NULL,":\"\n");
 strcpy(path,token);
 
 if(strstr(token,"\"")){
 
-  token=strtok(token,"\"");
+ // token=strtok(token,"\"");
 
   strcpy(path,token);
 
@@ -526,7 +586,8 @@ return 1;
 
 }
 int fdisk(char *token){
-
+if(strstr(comprobarcadena,"\"/") && strstr(comprobarcadena,".dsk\"")){
+    }else{printf("\nError en el comando\n"); return -1;}
     int    op = 0;
     int    size1=0;
     char*  unit1[5];
@@ -540,9 +601,9 @@ int fdisk(char *token){
     int  Menos=0;
     int delete11=0;
 
-    //aca se mira si hay comandos incompatibles
+    //aca se mira si hay comandos comprobarcadenas
     if(strstr(comprobarcadena,"add") && strstr(comprobarcadena,"delete") || strstr(comprobarcadena,"add") && strstr(comprobarcadena,"size") || strstr(comprobarcadena,"size") && strstr(comprobarcadena,"delete")){
-   printf("\nError comandos Incompatibles\n");
+   printf("\nError comandos comprobarcadenas\n");
    return -1;
    }
    //SE VERIFICA QUE ESTE TODA LA INFORMACION DE SIZE
@@ -582,7 +643,7 @@ int fdisk(char *token){
     strcpy(unit1,"k");
     strcpy(type1,"p");
 
-        printf("\nponiendo token %s\n",token);
+     //   printf("\nponiendo token %s\n",token);
     //SE ANALIZA LA CADENA A EJECUTAR
      while(token !=NULL){
         token=strtok(NULL," :");
@@ -595,7 +656,7 @@ int fdisk(char *token){
         if(strstr(token,"+delete"))  op=6;
         if(strstr(token,"-name"))    op=7;
         if(strstr(token,"+add"))     op=8;
-        printf("\nponiendo token Q%sQ ---- %d\n",token, op);
+     //   printf("\nponiendo token Q%sQ ---- %d\n",token, op);
      switch(op){
       case 1:
         token=strtok(NULL," :");
@@ -604,7 +665,7 @@ int fdisk(char *token){
         printf("\nComando invalido o mal escrito\n");
         return -1;
         }else if(size1 <=0){
-            printf("\nTama;o de particion invalido\n");
+            printf("\nTamaño de particion invalido\n");
             return -1;
         }
           break;
@@ -621,10 +682,11 @@ int fdisk(char *token){
         }
         break;
       case 3:
-          token = strtok(NULL,": ");
+         token=strtok(NULL,":\"\n");
+          //token = strtok(NULL,": ");
       char *tok;
       if(strstr(token,"\"")){
-        tok=strtok(token,"\"");
+       // tok=strtok(token,"\"");
         strcpy(path1,tok);
       }else{
           strcpy(path1,token);
@@ -665,7 +727,8 @@ int fdisk(char *token){
           break;
 
       case 7:
-          token =strtok(NULL," :");
+      token=strtok(NULL,":\"\n");
+          //token =strtok(NULL," :");
           strcpy(name1,token);
           if(name1==NULL){
               printf("\nNombre invalido\n");
@@ -811,6 +874,7 @@ int fdisk(char *token){
         fclose(amigo);
 
     }
+    printf("\nParticion Creada Con exito\n");
 
    }
 
@@ -857,10 +921,10 @@ int fdisk(char *token){
         fclose(amigo);
 
     }
-
+printf("\nParticion Creada Con exito\n");
    }
 
-        //SI PARTICION TRES ESTA VACIA
+         //SI PARTICION TRES ESTA VACIA
         else if(mbr01->mbr_partition3.part_size==0){
 
         int inicio=0;
@@ -902,10 +966,10 @@ int fdisk(char *token){
         fclose(amigo);
 
     }
-
+    printf("\nParticion Creada Con exito\n");
    }
 
-        //SI PARTICION CUATRO ESTA VACIA
+           //SI PARTICION CUATRO ESTA VACIA
         else if(mbr01->mbr_partition4.part_size==0){
 
         int inicio=0;
@@ -947,8 +1011,655 @@ int fdisk(char *token){
         fclose(amigo);
 
     }
-
+    printf("\nParticion Creada Con exito\n");
    }
+
+   if(strcmp("l",type1)==0){
+
+/*******************************************************************************************************************************************************************************************************************************/
+          if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
+              FILE* file = fopen(path1,"rb+");
+              mbr* mbraux=(mbr*)malloc(sizeof(mbr));
+              fseek(file,0,SEEK_SET);
+              fread(mbraux,sizeof(mbr),1,file);
+              fclose(file);
+             // printf("\ntam en if de logica %d\n",mbraux->mbr_tamanio);
+
+                /* enviarebrs(path1);
+                 if(mbr01->mbr_partition1.part_size<logsumasize){
+                     vaciarlisebr();
+                     logsumasize=0;
+                     printf("\nya no hay espacio para una particion tan grande.\n");
+                    return -1;
+                 }
+                 vaciarlisebr();
+                 logsumasize=0;*/
+              int inicio =mbr01->mbr_partition1.part_start;
+                int size =mbr01->mbr_partition1.part_size;
+
+                if(size<size1){
+                    printf("\nparticion logica mas grande que la extendida total\n");
+                            return -1;
+                }
+//CA<
+int asasdadadasdas;
+                FILE *archivo=fopen(path1,"rb+");
+
+                fseek(archivo,0,SEEK_SET);
+                mbr *aux2 =(mbr *)malloc(sizeof(mbr));
+                ebr *aux3=(ebr *)malloc(sizeof(ebr));
+                fread(aux2,sizeof(mbr),1,archivo);
+                fseek(archivo,inicio,SEEK_CUR);
+                int cur=ftell(archivo);
+                fread(aux3,sizeof(ebr),1,archivo);
+                ebr *aux4=(ebr *)malloc(sizeof(ebr));
+                int o;
+                int contador=0;
+                int st;
+                FILE* file1 = fopen(path1,"r+b");
+                mbr* mbraux1=(mbr*)malloc(sizeof(mbr));
+                fseek(file1,0,SEEK_SET);
+                fread(mbraux1,sizeof(mbr),1,file1);
+                fclose(file1);
+                //printf("\n\n\ntam en if de logica FINAL! %d\n\n\n",mbraux1->mbr_tamanio);
+
+                int bandera=0;
+                if(aux3->part_next==-1 && aux3->part_size>0){
+                    aux3->part_next=aux3->part_size+aux3->part_start;
+
+                    fseek(archivo,0,SEEK_SET);
+                    fread(aux2,sizeof(mbr),1,archivo);
+                    fseek(archivo,inicio,SEEK_CUR);
+                    fwrite(aux3,sizeof(ebr),1,archivo);
+
+                    fseek(archivo,0,SEEK_SET);
+
+                    fread(aux2,sizeof(mbr),1,archivo);
+                    fseek(archivo,inicio,SEEK_CUR);
+                    cur=ftell(archivo);
+                    fread(aux3,sizeof(ebr),1,archivo);
+                    bandera=1;
+                }
+
+
+
+
+               // printf("\nsiguiente de primera particion. %d\n",aux3->part_next);
+             /*   while(bandera==0){
+
+
+
+                  o=aux3->part_size;
+                  int lk;
+                  fseek(archivo,o,SEEK_CUR);
+                   contador++;
+
+                   if(aux3->part_next==-1){
+
+                       aux3->part_next=aux3->part_size+aux3->part_start;
+
+                       fseek(archivo,lk,SEEK_SET);
+
+                       fwrite(aux3,sizeof(ebr),1,archivo);
+
+                       fseek(archivo,-sizeof(ebr),SEEK_CUR);
+                       st=ftell(archivo);
+                       fread(aux3,sizeof(ebr),1,archivo);
+
+
+                       break;
+                   }else{
+                       fseek(archivo,0,SEEK_CUR);
+                         lk=ftell(archivo);
+                       fread(aux3,sizeof(ebr),1,archivo);
+;
+                   }
+
+
+
+                }
+                bandera=0;
+
+*/
+int lk;
+                while(bandera==0){
+                  o=aux3->part_size;
+                   contador++;
+                   if(aux3->part_next==-1){
+                        aux3->part_next=aux3->part_size+aux3->part_start;
+                        fseek(archivo,-sizeof(ebr),SEEK_CUR);
+                        fwrite(aux3,sizeof(ebr),1,archivo);
+                        fseek(archivo,-sizeof(ebr),SEEK_CUR);
+                        st=ftell(archivo);
+                        fread(aux3,sizeof(ebr),1,archivo);
+                        break;
+                   }else{
+                        fseek(archivo,o,SEEK_CUR);
+                       //fseek(archivo,0,SEEK_CUR);
+                        lk=ftell(archivo);
+                        fread(aux3,sizeof(ebr),1,archivo);
+                   }
+                }
+                bandera=0;
+
+                if(aux3->part_size>0){
+                fseek(archivo,aux3->part_size,SEEK_CUR);
+                }else{
+
+                    fseek(archivo,0,SEEK_SET);
+                    fread(aux2,sizeof(mbr),1,archivo);
+                    fseek(archivo,inicio,SEEK_CUR);
+
+                }
+
+                FILE* file11 = fopen(path1,"r+b");
+                mbr* mbraux11=(mbr*)malloc(sizeof(mbr));
+                fseek(file11,0,SEEK_SET);
+                fread(mbraux11,sizeof(mbr),1,file11);
+                fclose(file11);
+               // printf("\n\n\ntam en if de logica FINAL22! %d\n\n\n",mbraux11->mbr_tamanio);
+
+                strcpy(aux4->part_fit,fit1);
+                aux4->part_status=1;
+                if(aux3->part_size>0){
+                aux4->part_start=aux3->part_next;
+
+               // printf("\ninicio de nueva particion. %d\n",aux4->part_start);
+                }else{
+                    aux4->part_start=aux2->mbr_partition1.part_start;
+                  //  printf("\ninicio de nueva particion. %d",aux4->part_start);
+
+                }
+                aux4->part_size=size1;
+                aux4->part_next=-1;
+                strcpy(aux4->part_name,name1);
+
+
+
+
+                fwrite(aux4,sizeof(ebr),1,archivo);
+
+
+/****/
+
+                fseek(archivo,st,SEEK_SET);
+                globalcu=ftell(archivo);
+                ebr *aux44=(ebr *)malloc(sizeof(ebr));
+                fread(aux44,sizeof(ebr),1,archivo);
+
+
+
+
+
+                fclose(archivo);
+
+                FILE* file12 = fopen(path1,"r+b");
+                mbr* mbraux13=(mbr*)malloc(sizeof(mbr));
+                fseek(file12,0,SEEK_SET);
+                fread(mbraux13,sizeof(mbr),1,file12);
+                fclose(file12);
+                //printf("\n\n\ntam en if de logica FINAL11! %s\n\n\n",mbraux13->mbr_nam);
+
+                printf("\nDatos de nueva particion Logica.\n");
+                printf("\nfit: %s\n",aux4->part_fit);
+                printf("\nname: %s\n",aux4->part_name);
+                printf("\nsiguiente: %d\n",aux4->part_next);
+                printf("\ntama;o: %d\n",aux4->part_size);
+                printf("\ninicio: %d\n",aux4->part_start);
+                printf("\nestatus: %d\n",aux4->part_status);
+
+          }
+
+
+
+
+ /*********************************************************************************************************************************************************************************************************************/
+          if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
+             /* enviarebrs(path1);
+              if(mbr01->mbr_partition2.part_size<logsumasize){
+                  vaciarlisebr();
+                  logsumasize=0;
+                  printf("\nya no hay espacio para una particion tan grande.\n");
+                 return -1;
+              }
+              vaciarlisebr();
+              logsumasize=0;*/
+              int inicio =mbr01->mbr_partition2.part_start;
+                int size =mbr01->mbr_partition2.part_size;
+
+                if(size<size1){
+                    printf("\nparticion logica mas grande que la extendida total\n");
+                            return -1;
+                }
+
+                FILE *archivo=fopen(path1,"rb+");
+
+                fseek(archivo,0,SEEK_SET);
+                mbr *aux2 =(mbr *)malloc(sizeof(mbr));
+                ebr *aux3=(ebr *)malloc(sizeof(ebr));
+                fread(aux2,sizeof(mbr),1,archivo);
+                fseek(archivo,inicio,SEEK_CUR);
+                int cur=ftell(archivo);
+                fread(aux3,sizeof(ebr),1,archivo);
+                ebr *aux4=(ebr *)malloc(sizeof(ebr));
+                int o;
+                int contador=0;
+                int st;
+
+
+                int bandera=0;
+                if(aux3->part_next==-1 && aux3->part_size>0){
+                    aux3->part_next=aux3->part_size+aux3->part_start;
+
+                    fseek(archivo,0,SEEK_SET);
+                    fread(aux2,sizeof(mbr),1,archivo);
+                    fseek(archivo,inicio,SEEK_CUR);
+                    fwrite(aux3,sizeof(ebr),1,archivo);
+
+                    fseek(archivo,0,SEEK_SET);
+
+                    fread(aux2,sizeof(mbr),1,archivo);
+                    fseek(archivo,inicio,SEEK_CUR);
+                    cur=ftell(archivo);
+                    fread(aux3,sizeof(ebr),1,archivo);
+                    bandera=1;
+                }
+
+
+
+
+              //  printf("\nsiguiente de primera particion. %d\n",aux3->part_next);
+                /*while(bandera==0){
+
+
+
+                  o=aux3->part_size;
+                  int lk;
+                  fseek(archivo,o,SEEK_CUR);
+                   contador++;
+
+                   if(aux3->part_next==-1){
+
+                       aux3->part_next=aux3->part_size+aux3->part_start;
+
+                       fseek(archivo,lk,SEEK_SET);
+
+                       fwrite(aux3,sizeof(ebr),1,archivo);
+
+                       fseek(archivo,-sizeof(ebr),SEEK_CUR);
+                       st=ftell(archivo);
+                       fread(aux3,sizeof(ebr),1,archivo);
+
+
+                       break;
+                   }else{
+                       fseek(archivo,0,SEEK_CUR);
+                         lk=ftell(archivo);
+                       fread(aux3,sizeof(ebr),1,archivo);
+;
+                   }
+
+
+
+                }
+                bandera=0;
+*/
+int lk;
+                while(bandera==0){
+                  o=aux3->part_size;
+                   contador++;
+                   if(aux3->part_next==-1){
+                        aux3->part_next=aux3->part_size+aux3->part_start;
+                        fseek(archivo,-sizeof(ebr),SEEK_CUR);
+                        fwrite(aux3,sizeof(ebr),1,archivo);
+                        fseek(archivo,-sizeof(ebr),SEEK_CUR);
+                        st=ftell(archivo);
+                        fread(aux3,sizeof(ebr),1,archivo);
+                        break;
+                   }else{
+                        fseek(archivo,o,SEEK_CUR);
+                       //fseek(archivo,0,SEEK_CUR);
+                        lk=ftell(archivo);
+                        fread(aux3,sizeof(ebr),1,archivo);
+                   }
+                }
+                bandera=0;
+
+                if(aux3->part_size>0){
+                fseek(archivo,aux3->part_size,SEEK_CUR);
+                }else{
+
+                    fseek(archivo,0,SEEK_SET);
+                    fread(aux2,sizeof(mbr),1,archivo);
+                    fseek(archivo,inicio,SEEK_CUR);
+
+                }
+
+                strcpy(aux4->part_fit,fit1);
+                aux4->part_status=1;
+                if(aux3->part_size>0){
+                aux4->part_start=aux3->part_next;
+
+             //   printf("\ninicio de nueva particion. %d\n",aux4->part_start);
+                }else{
+                    aux4->part_start=aux2->mbr_partition2.part_start;
+                   // printf("\ninicio de nueva particion. %d",aux4->part_start);
+
+                }
+                aux4->part_size=size1;
+                aux4->part_next=-1;
+                strcpy(aux4->part_name,name1);
+
+                fwrite(aux4,sizeof(ebr),1,archivo);
+
+
+                fseek(archivo,st,SEEK_SET);
+                globalcu=ftell(archivo);
+                ebr *aux44=(ebr *)malloc(sizeof(ebr));
+                fread(aux44,sizeof(ebr),1,archivo);
+
+                fclose(archivo);
+
+
+                printf("\nDatos de NUeva particion logica creada\n");
+                printf("\nfit: %s\n",aux4->part_fit);
+                printf("\nname: %s\n",aux4->part_name);
+                printf("\nsiguiente: %d\n",aux4->part_next);
+                printf("\ntama;o: %d\n",aux4->part_size);
+                printf("\ninicio: %d\n",aux4->part_start);
+                printf("\nestatus: %d\n",aux4->part_status);
+
+          }
+
+/***************************************************************************************************************************************************************************************************************************************/
+          if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
+
+              int inicio =mbr01->mbr_partition3.part_start;
+                int size =mbr01->mbr_partition3.part_size;
+
+                if(size<size1){
+                    printf("\nparticion logica mas grande que la extendida total\n");
+                            return -1;
+                }
+
+                FILE *archivo=fopen(path1,"rb+");
+
+                fseek(archivo,0,SEEK_SET);
+                mbr *aux2 =(mbr *)malloc(sizeof(mbr));
+                ebr *aux3=(ebr *)malloc(sizeof(ebr));
+                fread(aux2,sizeof(mbr),1,archivo);
+                fseek(archivo,inicio,SEEK_CUR);
+                int cur=ftell(archivo);
+                fread(aux3,sizeof(ebr),1,archivo);
+                ebr *aux4=(ebr *)malloc(sizeof(ebr));
+                int o;
+                int contador=0;
+                int st;
+
+
+                int bandera=0;
+                if(aux3->part_next==-1 && aux3->part_size>0){
+
+
+
+                 mbr* cargambr1=(mbr*)malloc(sizeof(mbr));
+
+        //fseek(assa,0,SEEK_SET);
+
+
+                    aux3->part_next=aux3->part_size+aux3->part_start;
+
+                    fseek(archivo,0,SEEK_SET);
+                    fread(aux2,sizeof(mbr),1,archivo);
+                    fseek(archivo,inicio,SEEK_CUR);
+                    fwrite(aux3,sizeof(ebr),1,archivo);
+
+                    fseek(archivo,0,SEEK_SET);
+
+                    fread(aux2,sizeof(mbr),1,archivo);
+                    fseek(archivo,inicio,SEEK_CUR);
+                    cur=ftell(archivo);
+                    fread(aux3,sizeof(ebr),1,archivo);
+                    bandera=1;
+                }
+
+
+
+
+                //printf("\nsiguiente de primera particion. %d\n",aux3->part_next);
+
+int lk;
+                while(bandera==0){
+                  o=aux3->part_size;
+                   contador++;
+                   if(aux3->part_next==-1){
+                        aux3->part_next=aux3->part_size+aux3->part_start;
+                        fseek(archivo,-sizeof(ebr),SEEK_CUR);
+                        fwrite(aux3,sizeof(ebr),1,archivo);
+                        fseek(archivo,-sizeof(ebr),SEEK_CUR);
+                        st=ftell(archivo);
+                        fread(aux3,sizeof(ebr),1,archivo);
+                        break;
+                   }else{
+                        fseek(archivo,o,SEEK_CUR);
+                       //fseek(archivo,0,SEEK_CUR);
+                        lk=ftell(archivo);
+                        fread(aux3,sizeof(ebr),1,archivo);
+                   }
+                }
+                bandera=0;
+
+
+                if(aux3->part_size>0){
+                fseek(archivo,aux3->part_size,SEEK_CUR);
+                }else{
+
+                    fseek(archivo,0,SEEK_SET);
+                    fread(aux2,sizeof(mbr),1,archivo);
+                    fseek(archivo,inicio,SEEK_CUR);
+
+                }
+
+                strcpy(aux4->part_fit,fit1);
+                aux4->part_status=1;
+                if(aux3->part_size>0){
+                aux4->part_start=aux3->part_next;
+
+                printf("\ninicio de nueva particion. %d\n",aux4->part_start);
+                }else{
+                    aux4->part_start=aux2->mbr_partition3.part_start;
+                    printf("\ninicio de nueva particion. %d",aux4->part_start);
+
+                }
+                aux4->part_size=size1;
+                aux4->part_next=-1;
+                strcpy(aux4->part_name,name1);
+
+                fwrite(aux4,sizeof(ebr),1,archivo);
+
+
+                fseek(archivo,st,SEEK_SET);
+                globalcu=ftell(archivo);
+                ebr *aux44=(ebr *)malloc(sizeof(ebr));
+                fread(aux44,sizeof(ebr),1,archivo);
+
+                fclose(archivo);
+
+
+                printf("\nDatos de nueva particion logica:\n");
+                printf("\nfit: %s\n",aux4->part_fit);
+                printf("\nname: %s\n",aux4->part_name);
+                printf("\nsiguiente: %d\n",aux4->part_next);
+                printf("\ntama;o: %d\n",aux4->part_size);
+                printf("\ninicio: %d\n",aux4->part_start);
+                printf("\nestatus: %d\n",aux4->part_status);
+
+
+          }
+
+/****************************************************************************************************************************************************************************************************************************************************************************/
+
+
+          if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
+            /*  enviarebrs(path1);
+              if(mbr01->mbr_partition1.part_size<logsumasize){
+                  vaciarlisebr();
+                  logsumasize=0;
+                  printf("\nya no hay espacio para una particion tan grande.\n");
+                 return -1;
+              }
+              vaciarlisebr();
+              logsumasize=0;
+*/
+              int inicio =mbr01->mbr_partition4.part_start;
+                int size =mbr01->mbr_partition4.part_size;
+
+                if(size<size1){
+                    printf("\nparticion logica mas grande que la extendida total\n");
+                            return -1;
+                }
+
+                FILE *archivo=fopen(path1,"rb+");
+
+                fseek(archivo,0,SEEK_SET);
+                mbr *aux2 =(mbr *)malloc(sizeof(mbr));
+                ebr *aux3=(ebr *)malloc(sizeof(ebr));
+                fread(aux2,sizeof(mbr),1,archivo);
+                fseek(archivo,inicio,SEEK_CUR);
+                int cur=ftell(archivo);
+                fread(aux3,sizeof(ebr),1,archivo);
+                ebr *aux4=(ebr *)malloc(sizeof(ebr));
+                int o;
+                int contador=0;
+                int st;
+
+
+                int bandera=0;
+                if(aux3->part_next==-1 && aux3->part_size>0){
+                    aux3->part_next=aux3->part_size+aux3->part_start;
+
+                    fseek(archivo,0,SEEK_SET);
+                    fread(aux2,sizeof(mbr),1,archivo);
+                    fseek(archivo,inicio,SEEK_CUR);
+                    fwrite(aux3,sizeof(ebr),1,archivo);
+
+                    fseek(archivo,0,SEEK_SET);
+
+                    fread(aux2,sizeof(mbr),1,archivo);
+                    fseek(archivo,inicio,SEEK_CUR);
+                    cur=ftell(archivo);
+                    fread(aux3,sizeof(ebr),1,archivo);
+                    bandera=1;
+                }
+
+
+
+
+               // printf("\nsiguiente de primera particion. %d\n",aux3->part_next);
+               /* while(bandera==0){
+
+
+
+                  o=aux3->part_size;
+                  int lk;
+                  fseek(archivo,o,SEEK_CUR);
+                   contador++;
+
+                   if(aux3->part_next==-1){
+
+                       aux3->part_next=aux3->part_size+aux3->part_start;
+
+                       fseek(archivo,lk,SEEK_SET);
+
+                       fwrite(aux3,sizeof(ebr),1,archivo);
+
+                       fseek(archivo,-sizeof(ebr),SEEK_CUR);
+                       st=ftell(archivo);
+                       fread(aux3,sizeof(ebr),1,archivo);
+
+
+                       break;
+                   }else{
+                       fseek(archivo,0,SEEK_CUR);
+                         lk=ftell(archivo);
+                       fread(aux3,sizeof(ebr),1,archivo);
+;
+                   }
+
+
+
+                }
+                bandera=0;
+*/
+                int lk;
+                while(bandera==0){
+                  o=aux3->part_size;
+                   contador++;
+                   if(aux3->part_next==-1){
+                        aux3->part_next=aux3->part_size+aux3->part_start;
+                        fseek(archivo,-sizeof(ebr),SEEK_CUR);
+                        fwrite(aux3,sizeof(ebr),1,archivo);
+                        fseek(archivo,-sizeof(ebr),SEEK_CUR);
+                        st=ftell(archivo);
+                        fread(aux3,sizeof(ebr),1,archivo);
+                        break;
+                   }else{
+                        fseek(archivo,o,SEEK_CUR);
+                       //fseek(archivo,0,SEEK_CUR);
+                        lk=ftell(archivo);
+                        fread(aux3,sizeof(ebr),1,archivo);
+                   }
+                }
+                bandera=0;
+
+                if(aux3->part_size>0){
+                fseek(archivo,aux3->part_size,SEEK_CUR);
+                }else{
+
+                    fseek(archivo,0,SEEK_SET);
+                    fread(aux2,sizeof(mbr),1,archivo);
+                    fseek(archivo,inicio,SEEK_CUR);
+
+                }
+
+                strcpy(aux4->part_fit,fit1);
+                aux4->part_status=1;
+                if(aux3->part_size>0){
+                aux4->part_start=aux3->part_next;
+
+                //printf("\ninicio de nueva particion. %d\n",aux4->part_start);
+                }else{
+                    aux4->part_start=aux2->mbr_partition4.part_start;
+                  //  printf("\ninicio de nueva particion. %d",aux4->part_start);
+
+                }
+                aux4->part_size=size1;
+                aux4->part_next=-1;
+                strcpy(aux4->part_name,name1);
+
+                fwrite(aux4,sizeof(ebr),1,archivo);
+
+
+                fseek(archivo,st,SEEK_SET);
+                globalcu=ftell(archivo);
+                ebr *aux44=(ebr *)malloc(sizeof(ebr));
+                fread(aux44,sizeof(ebr),1,archivo);
+
+                fclose(archivo);
+
+
+                printf("\nDatos de nueva particion logica\n");
+                printf("\nfit: %s\n",aux4->part_fit);
+                printf("\nname: %s\n",aux4->part_name);
+                printf("\nsiguiente: %d\n",aux4->part_next);
+                printf("\ntama;o: %d\n",aux4->part_size);
+                printf("\ninicio: %d\n",aux4->part_start);
+                printf("\nestatus: %d\n",aux4->part_status);
+
+          }
+
+/**************************************************************************************************************************************************************************************************************************************************************************************************************************/
+      }
 
     }
 
@@ -962,10 +1673,10 @@ int fdisk(char *token){
         printf("\nDesea eliminar particion (si o no)\n");
         char*des[20];
         fgets(des,20,stdin);
-        if(strcmp(des,"no")==0){
+        if(strstr(des,"no")){
             printf("\nParticion NO eliminada\n");
             return-1;
-        }else if(strcmp(des,"si")!=0){
+        }else if(!strstr(des,"si")){
             printf("\nRespuesta invalida, se aborto la mision.\n");
             return-1;
         }
@@ -1086,7 +1797,6 @@ int fdisk(char *token){
 
 
     }
-
 
      if(add1!=0){
         FILE *agregar=fopen(path1,"rb+");
@@ -1482,10 +2192,6 @@ int fdisk(char *token){
 
 
     }
-
-
-
-
 
     return 1;
 }
@@ -1935,6 +2641,10 @@ int IniciarParticion(int a1,int a2, int b1, int b2, int c1, int c2, int size, in
 
 }
 int mount(char*token){
+
+if((strstr(comprobarcadena,"\"/") && strstr(comprobarcadena,".dsk\"") )|| (strcmp(comprobarcadena,"mount")==0)){
+    }else{printf("\nError en el comando\n"); return -1;}
+
 int mostrar=0;
     if(strstr(comprobarcadena,"path") && strstr(comprobarcadena,"name")){}
 
@@ -1962,11 +2672,12 @@ int mostrar=0;
         if(strstr(token,"-name"))    op=2;
      switch(op){
       case 1:
-          token = strtok(NULL," :");
+            token=strtok(NULL,":\"\n");
+         // token = strtok(NULL," :");
       strcpy(path1,"/");
       char *tok;
       if(strstr(token,"\"")){
-        tok=strtok(token,"\"");
+        //tok=strtok(token,"\"");
         strcpy(path1,tok);
       }else{
           strcpy(path1,token);
@@ -1982,7 +2693,8 @@ int mostrar=0;
 
           break;
       case 2:
-          token =strtok(NULL," :");
+       //   token =strtok(NULL," :");
+         token=strtok(NULL,":\"\n");
           strcpy(name1,token);
         //  printf("\nEl nombre es: %s\n",name1);
           if(name1==NULL){
@@ -2368,6 +3080,8 @@ void vaciarlista(){
 }
 int rep(char *token){
 /********************************************************************************************************************************************************************/
+    if(strstr(comprobarcadena,"\"/") && strstr(comprobarcadena,"\"")){
+    }else{printf("\nError en el comando\n"); return -1;}
     int    op = 0;
     char*  path1[200];
     char*  name1[50];
@@ -2400,7 +3114,28 @@ int rep(char *token){
         if(strstr(token,"-id"))    op=3;
      switch(op){
       case 1:
-         token = strtok(NULL," :");
+
+        token=strtok(NULL,":\"\n");
+        if(strstr(token,"\"")){
+           // printf("token3  ------%s\n",token);
+            strcpy(dpth,token);
+            strcpy(dpth2,dpth);
+            strcpy(dpth3,dpth);
+        }else{
+            //token = strtok(NULL,":");
+            strcpy(dpth,token);
+            strcpy(dpth2,token);
+            strcpy(dpth3,token);
+        }
+
+
+      //  printf("dpth %s\n",dpth);
+       // printf("dpth2 %s\n",dpth2);
+       // printf("dpth3 %s\n",dpth3);
+
+        break;
+
+       /*  token = strtok(NULL," :");
 
          if(strstr(token,"\"")){
              strcpy(dpth,token+1);
@@ -2414,11 +3149,24 @@ int rep(char *token){
              strcpy(dpth2,token);
              strcpy(dpth3,token);
          }
-         break;
+         break;*/
 
       case 2:
-          token =strtok(NULL," :");
-          strcpy(name1,token);
+
+      token=strtok(NULL,":\"\n");
+        if(strstr(token,"\"")){
+           // printf("token3  ------%s\n",token);
+            strcpy(name1,token);
+        }else{
+            //token = strtok(NULL,":");
+            strcpy(name1,token);
+        }
+
+      /******************************/
+         // token =strtok(NULL," :");
+       //   strcpy(name1,token);
+
+
           if(name1==NULL){
               printf("\nNombre invalido\n");
               return -1;
@@ -2446,6 +3194,11 @@ int rep(char *token){
 
     /********************CREANDO PATH***********************/
     //creando path
+     //SE CREA EL PATH
+
+    //strcat(dpth,Nombre);
+    //strcat(dpth2,Nombre);
+    //strcat(dpth3,Nombre);
     int numPalabras =1;
     char *tem;
     tem =strtok(dpth,"/");
@@ -2471,6 +3224,31 @@ int rep(char *token){
     }
 
     aux11 = strtok(NULL,"/");
+  /*  int numPalabras =1;
+    char *tem;
+    tem =strtok(dpth,"/");
+
+    while(tem!=NULL){
+        tem =strtok(NULL,"/");
+        if(tem==NULL) break;
+        numPalabras++;
+    }
+
+    char pathReal[200]="/";
+    char*aux11;
+    aux11= strtok(dpth2,"/");
+    strcat(pathReal,aux11);
+    strcat(pathReal,"/");
+    while(numPalabras > 2)
+    {
+        aux11 = strtok(NULL,"/");
+        strcat(pathReal,aux11);
+        strcat(pathReal,"/");
+        mkdir(pathReal ,S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        numPalabras--;
+    }
+
+    aux11 = strtok(NULL,"/");*/
         /********************FN DE CREAR PATH***********************/
 
     /********************VERIFICAR EXISTENCIA DE ID***********************/
@@ -2492,12 +3270,15 @@ int rep(char *token){
         }
 
 
+
+
     /********************FIN DE VERIFICAR EXISTENCIA DE ID***********************/
     /********************TRAYENDO EL DISCO COMPLETO Y CARGAR TODAS SUS PARTICIONES****************************/
         mbr* cargambr=(mbr*)malloc(sizeof(mbr));
         FILE*disco=fopen(aux1->path,"rb+");
         fseek(disco,0,SEEK_SET);
         fread(cargambr,sizeof(mbr),1,disco);
+        //("--lllllllllllllllllllllll--------------------%s\n",cargambr->mbr_partition1.part_type);
         //printf("\nname1: %s\n",name1);
 
         if(strcmp(name1,"mbr")==0 ||strcmp(name1,"disk")==0){
@@ -2586,17 +3367,25 @@ int rep(char *token){
     fclose(archivo1);
     char*direccion[200];
     strcpy(direccion,dpth3);
-
+printf("DIRECCIION PATH: %s\n",dpth3);
      /*******************/
          //;
          char ja[50] = "dot -Tjpg archivosMBR.dot -o ";
+         strcat(ja,"\"");
          strcat(ja,dpth3);
+         strcat(ja,"\"");
          system(ja);
+
          printf("\nReporte creado con exito.\n");
 
      /*******************/
          vaciarlistadereportes();
          vaciarlisebr();
+         char ja1[100]="firefox ";
+         strcat(ja1,"\"");
+        strcat(ja1,dpth3);
+        strcat(ja1,"\"");
+        system(ja1);
      return 0;
 }
 void repMBR(){
@@ -2635,14 +3424,16 @@ numcirr++;
                fprintf(archivo1, "mbr_fecha_creacion: %s",ingresar->mbr_fecha_creacion);
                char *ccc88 = " | ";
                fprintf(archivo1, "%s", ccc88);
-               fprintf(archivo1, "mbr_fecha_creacion: %d",ingresar->mbr_tamanio);
+               fprintf(archivo1, "mbr_tamanio_disco: %d",ingresar->mbr_tamanio);
                if(reportedisk1->tam==1){ break;}else{
                char *ccc888 = " | ";
                 fprintf(archivo1, "%s", ccc888);
                }
 
 
-           }else{
+           }
+           else if(strcmp(ingresar->part_type,"l")==0 ||  strcmp(ingresar->part_type,"1")==0){}
+            else{
             fprintf(archivo1, "part_name: %s",ingresar->part_name);
             char *ccc8 = " | ";
             fprintf(archivo1, "%s", ccc8);
@@ -2890,10 +3681,15 @@ void addlistareportedisk(partition particion){
 }
 void repDISK(char*path1[200]){
     mbr *mbr01=(mbr*)malloc(sizeof(mbr));
+
      FILE *partc =fopen(path1,"r+b");
 
     fseek(partc,0,SEEK_SET);
     fread(mbr01,sizeof(mbr),1,partc);
+    //printf("\nDENTRO DE --------------------------------------------TYEPE TT%sTT \n",mbr01->mbr_partition1.part_type);
+   // printf("\nDENTRO DE --------------------------------------------TYEPE TT%sTT \n",mbr01->mbr_partition2.part_name);
+   // printf("\nDENTRO DE --------------------------------------------TYEPE TT%sTT \n",mbr01->mbr_partition3.part_name);
+
     fclose(partc);
     int part1=mbr01->mbr_partition1.part_start+mbr01->mbr_partition1.part_size;
     int part2=mbr01->mbr_partition2.part_start+mbr01->mbr_partition2.part_size;
@@ -2922,12 +3718,16 @@ void repDISK(char*path1[200]){
 
     //para uno menor
     if((parti1<parti2 || size2<1) && (parti1<parti3|| size3<1) && (parti1<parti4|| size4<1) && mbr01->mbr_partition1.part_size>0){
-        //printf("\nDENTRO DE IF\n");
+       printf("\nDENTRO DE IF UNO MENOR\n");
+
         if(parti1==0){
+
+
             if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
+          //  printf("\nDENTRO DE --------------------------------------------PRI UNO\n");
             char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
             fprintf(archivo1, "%s", l1);
-            }else{
+            }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                 char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                 fprintf(archivo1, "%s", l1);
             }
@@ -2937,7 +3737,7 @@ void repDISK(char*path1[200]){
             if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
             char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
             fprintf(archivo1, "%s", l1);
-            }else{
+            }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                 char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                 fprintf(archivo1, "%s", l1);
             }
@@ -2949,13 +3749,16 @@ void repDISK(char*path1[200]){
             fprintf(archivo1, "%s", l1);
         }
         //particion 2 menor
-        if((parti2<parti4|| size4<1) &&(parti2<parti3|| size3<1) && mbr01->mbr_partition2.part_size>0){
+        if((parti2<parti4|| size4<1) &&(parti2<parti3|| size3<1) && mbr01->mbr_partition2.part_size>0)
+        {
+       // printf("\nDENTRO DE --------------------------------------------\n");
             int j= part1-parti2;
             if(j==0){
                 if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
+             //   printf("\nDENTRO DE --------------------------------------------PRI DOS\n");
                 char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", l1);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                     char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", l1);
                 }
@@ -2965,7 +3768,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                 char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", l1);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                     char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", l1);
                 }
@@ -2982,7 +3785,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                     char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", l1);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                         char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", l1);
                     }
@@ -2992,7 +3795,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                     char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", l1);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                         char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", l1);
                     }
@@ -3007,7 +3810,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                         char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", l1);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                             char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", l1);
                         }
@@ -3017,7 +3820,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                         char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", l1);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                             char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", l1);
                         }
@@ -3041,7 +3844,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                     char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", l1);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                         char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", l1);
                     }
@@ -3051,7 +3854,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                     char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", l1);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                         char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", l1);
                     }
@@ -3066,7 +3869,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                         char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", l1);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                             char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", l1);
                         }
@@ -3076,7 +3879,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                         char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", l1);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                             char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", l1);
                         }
@@ -3106,7 +3909,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                 char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", l1);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                     char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", l1);
                 }
@@ -3116,7 +3919,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                 char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", l1);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                     char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", l1);
                 }
@@ -3133,7 +3936,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                     char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", l1);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                         char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", l1);
                     }
@@ -3143,7 +3946,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                     char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", l1);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                         char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", l1);
                     }
@@ -3158,7 +3961,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                         char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", l1);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                             char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", l1);
                         }
@@ -3168,7 +3971,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                         char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", l1);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                             char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", l1);
                         }
@@ -3192,7 +3995,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                     char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", l1);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                         char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", l1);
                     }
@@ -3202,7 +4005,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                     char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", l1);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                         char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", l1);
                     }
@@ -3217,7 +4020,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                         char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", l1);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                             char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", l1);
                         }
@@ -3227,7 +4030,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                         char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", l1);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                             char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", l1);
                         }
@@ -3258,7 +4061,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                 char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", l1);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                     char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", l1);
                 }
@@ -3268,7 +4071,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                 char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", l1);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                     char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", l1);
                 }
@@ -3285,7 +4088,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                     char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", l1);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                         char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", l1);
                     }
@@ -3295,7 +4098,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                     char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", l1);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                         char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", l1);
                     }
@@ -3310,7 +4113,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                         char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", l1);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                             char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", l1);
                         }
@@ -3320,7 +4123,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                         char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", l1);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                             char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", l1);
                         }
@@ -3344,7 +4147,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                     char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", l1);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                         char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", l1);
                     }
@@ -3354,7 +4157,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                     char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", l1);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                         char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", l1);
                     }
@@ -3369,7 +4172,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                         char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", l1);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                             char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", l1);
                         }
@@ -3379,7 +4182,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                         char *l1="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", l1);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                             char *l1="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", l1);
                         }
@@ -3407,6 +4210,7 @@ void repDISK(char*path1[200]){
 
 
 
+//oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
     //para dos menor
     if((parti2<parti1 || size1<1) && (parti2<parti3|| size3<1) && (parti2<parti4|| size4<1) && mbr01->mbr_partition2.part_size>0){
@@ -3415,7 +4219,7 @@ void repDISK(char*path1[200]){
             if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
             char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
             fprintf(archivo1, "%s", lq);
-            }else{
+            }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                 char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                 fprintf(archivo1, "%s", lq);
             }
@@ -3425,7 +4229,7 @@ void repDISK(char*path1[200]){
             if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
             char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
             fprintf(archivo1, "%s", lq);
-            }else{
+            }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                 char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                 fprintf(archivo1, "%s", lq);
             }
@@ -3443,7 +4247,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                 char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", lq);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                     char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", lq);
                 }
@@ -3453,7 +4257,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                 char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", lq);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                     char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", lq);
                 }
@@ -3470,7 +4274,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -3480,7 +4284,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -3495,7 +4299,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -3505,7 +4309,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -3529,7 +4333,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -3539,7 +4343,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -3554,7 +4358,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -3564,7 +4368,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -3594,7 +4398,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                 char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", lq);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                     char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", lq);
                 }
@@ -3604,7 +4408,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                 char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", lq);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                     char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", lq);
                 }
@@ -3621,7 +4425,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -3631,7 +4435,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -3646,7 +4450,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -3656,7 +4460,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -3680,7 +4484,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -3690,7 +4494,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -3705,7 +4509,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -3715,7 +4519,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -3746,7 +4550,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                 char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", lq);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                     char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", lq);
                 }
@@ -3756,7 +4560,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                 char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", lq);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                     char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", lq);
                 }
@@ -3773,7 +4577,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -3783,7 +4587,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -3798,7 +4602,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -3808,7 +4612,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -3832,7 +4636,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -3842,7 +4646,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -3857,7 +4661,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -3867,7 +4671,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -3900,7 +4704,7 @@ void repDISK(char*path1[200]){
             if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
             char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
             fprintf(archivo1, "%s", lq);
-            }else{
+            }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                 char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                 fprintf(archivo1, "%s", lq);
             }
@@ -3910,7 +4714,7 @@ void repDISK(char*path1[200]){
             if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
             char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
             fprintf(archivo1, "%s", lq);
-            }else{
+            }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                 char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                 fprintf(archivo1, "%s", lq);
             }
@@ -3938,7 +4742,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                 char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", lq);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                     char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", lq);
                 }
@@ -3955,7 +4759,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -3965,7 +4769,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -3980,7 +4784,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -3990,7 +4794,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4014,7 +4818,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4024,7 +4828,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4039,7 +4843,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4049,7 +4853,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4079,7 +4883,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                 char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", lq);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                     char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", lq);
                 }
@@ -4089,7 +4893,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                 char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", lq);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                     char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", lq);
                 }
@@ -4106,7 +4910,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4116,7 +4920,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4131,7 +4935,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4141,7 +4945,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4165,7 +4969,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4175,7 +4979,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4190,7 +4994,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4200,7 +5004,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4231,7 +5035,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                 char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", lq);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                     char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", lq);
                 }
@@ -4241,7 +5045,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
                 char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", lq);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                     char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", lq);
                 }
@@ -4258,7 +5062,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4268,7 +5072,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4283,7 +5087,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4293,7 +5097,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4317,7 +5121,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4327,7 +5131,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4342,7 +5146,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4352,7 +5156,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4385,7 +5189,7 @@ void repDISK(char*path1[200]){
             if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
             char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
             fprintf(archivo1, "%s", lq);
-            }else{
+            }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                 char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                 fprintf(archivo1, "%s", lq);
             }
@@ -4395,7 +5199,7 @@ void repDISK(char*path1[200]){
             if(strcmp(mbr01->mbr_partition4.part_type,"p")==0){
             char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
             fprintf(archivo1, "%s", lq);
-            }else{
+            }else if(strcmp(mbr01->mbr_partition4.part_type,"e")==0){
                 char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                 fprintf(archivo1, "%s", lq);
             }
@@ -4413,7 +5217,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                 char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", lq);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                     char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", lq);
                 }
@@ -4423,7 +5227,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                 char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", lq);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                     char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", lq);
                 }
@@ -4440,7 +5244,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4450,7 +5254,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4465,7 +5269,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4475,7 +5279,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4499,7 +5303,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4509,7 +5313,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4524,7 +5328,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4534,7 +5338,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4564,7 +5368,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                 char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", lq);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                     char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", lq);
                 }
@@ -4574,7 +5378,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                 char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", lq);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                     char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", lq);
                 }
@@ -4591,7 +5395,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4601,7 +5405,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4616,7 +5420,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4626,7 +5430,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4650,7 +5454,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4660,7 +5464,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4675,7 +5479,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4685,7 +5489,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4716,7 +5520,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                 char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", lq);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                     char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", lq);
                 }
@@ -4726,7 +5530,7 @@ void repDISK(char*path1[200]){
                 if(strcmp(mbr01->mbr_partition2.part_type,"p")==0){
                 char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                 fprintf(archivo1, "%s", lq);
-                }else{
+                }else if(strcmp(mbr01->mbr_partition2.part_type,"e")==0){
                     char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                     fprintf(archivo1, "%s", lq);
                 }
@@ -4743,7 +5547,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4753,7 +5557,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4768,7 +5572,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4778,7 +5582,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4802,7 +5606,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4812,7 +5616,7 @@ void repDISK(char*path1[200]){
                     if(strcmp(mbr01->mbr_partition1.part_type,"p")==0){
                     char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                     fprintf(archivo1, "%s", lq);
-                    }else{
+                    }else if(strcmp(mbr01->mbr_partition1.part_type,"e")==0){
                         char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                         fprintf(archivo1, "%s", lq);
                     }
@@ -4827,7 +5631,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4837,7 +5641,7 @@ void repDISK(char*path1[200]){
                         if(strcmp(mbr01->mbr_partition3.part_type,"p")==0){
                         char *lq="<TD ROWSPAN=\"3\">PRIMARIA</TD>";
                         fprintf(archivo1, "%s", lq);
-                        }else{
+                        }else if(strcmp(mbr01->mbr_partition3.part_type,"e")==0){
                             char *lq="<TD COLSPAN=\"50\">EXTENDIDA</TD>";
                             fprintf(archivo1, "%s", lq);
                         }
@@ -4922,9 +5726,7 @@ void lisebr(char*fit[10],char*name[30],int next,int size, int start, int status)
 
 
 }
-
-
-//FIN METODOS FASE 1
+//FIN METODOS FASE 12
 
 
 

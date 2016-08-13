@@ -6,12 +6,12 @@ digraph{
 subgraph clusterESTAD2{ 
  label = " Reporte MBR"; 
  color=green; 
-nodoec1[label = " mbr_disk_Signature: 0 | mbr_fecha_creacion: 09/08/16 19:43:28 | mbr_fecha_creacion: 3145728 | part_name: particion1 | part_fit de particion1 : wf | part_size de particion1: 102400 | part_start de particion1: 0 | part_status de de particion1: 1 | part_typede de particion1: p |  | part_name: particion2 | part_fit de particion2 : wf | part_size de particion2: 204800 | part_start de particion2: 102400 | part_status de de particion2: 1 | part_typede de particion2: p |  | part_name: particion3 | part_fit de particion3 : wf | part_size de particion3: 307200 | part_start de particion3: 307200 | part_status de de particion3: 1 | part_typede de particion3: e | "];
+nodoec1[label = " mbr_disk_Signature: 0 | mbr_fecha_creacion: 12/08/16 18:48:41 | mbr_tamanio_disco: 31457280 | part_name: part1 | part_fit de part1 : wf | part_size de part1: 10485760 | part_start de part1: 0 | part_status de de part1: 1 | part_typede de part1: e |  | part_name: part2 | part_fit de part2 : wf | part_size de part2: 10485760 | part_start de part2: 10485760 | part_status de de part2: 1 | part_typede de part2: p |  | "];
 }
 
 subgraph clusterLOGICAS2{ 
  label = " Reporte MBR Particiones Logicas"; 
  color=green; 
-nodoec11[label = "  part_fit:  | part_name:  | part_next: -1 | part_size: 0 | part_start: -1 | part_status: 0"];
+nodoec11[label = "  part_fit: wf | part_name: part3 | part_next: -1 | part_size: 10485760 | part_start: 0 | part_status: 1"];
 }
 }
