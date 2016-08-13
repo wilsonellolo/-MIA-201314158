@@ -205,7 +205,7 @@ if(strstr(cadena,"#")){
 
         if(strcmp(token,"mkdisk")==0){
             mkdisk(token);
-            printf("-------PASO-----\n");
+           /// printf("-------PASO-----\n");
         }
         else if(strcmp(token,"rmdisk")==0){
             rmdisk(token);
@@ -500,7 +500,7 @@ while(token !=NULL){
        //fseek(archivo,0,SEEK_SET);
        fwrite(mbr1,sizeof(mbr),1,archivo);
        int h =0;
-       for(h; h<320*tamanioDeDisco;h++){
+       for(h; h<500*tamanioDeDisco;h++){
            fputs("\\0",archivo);
        }
     }else if(strcmp(unitletra,"m") == 0){

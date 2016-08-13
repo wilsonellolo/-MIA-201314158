@@ -6,7 +6,7 @@ digraph{
 subgraph clusterESTAD2{ 
  label = " Reporte MBR"; 
  color=green; 
-nodoec1[label = " mbr_disk_Signature: 0 | mbr_fecha_creacion: 12/08/16 18:48:41 | mbr_tamanio_disco: 31457280 | part_name: part1 | part_fit de part1 : wf | part_size de part1: 10485760 | part_start de part1: 0 | part_status de de part1: 1 | part_typede de part1: e |  | part_name: part2 | part_fit de part2 : wf | part_size de part2: 10485760 | part_start de part2: 10485760 | part_status de de part2: 1 | part_typede de part2: p |  | "];
+nodoec1[label = " mbr_disk_Signature: 0 | mbr_fecha_creacion: 12/08/16 19:38:27 | mbr_tamanio_disco: 31457280 | part_name: part1 | part_fit de part1 : wf | part_size de part1: 10485760 | part_start de part1: 0 | part_status de de part1: 1 | part_typede de part1: e |  | part_name: part2 | part_fit de part2 : wf | part_size de part2: 10485760 | part_start de part2: 10485760 | part_status de de part2: 1 | part_typede de part2: p |  | "];
 }
 
 subgraph clusterLOGICAS2{ 

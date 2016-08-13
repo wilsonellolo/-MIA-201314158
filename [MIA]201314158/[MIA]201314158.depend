@@ -13,3 +13,15 @@
 1470261935 /home/wilson/github MIA/MIA201314158/[MIA]201314158/exec.h
 	<stdio.h>
 
+1471048951 source:/home/wilson/github archivos/MIA201314158/[MIA]201314158/main.c
+	<stdio.h>
+	<stdlib.h>
+	<sys/stat.h>
+	<string.h>
+	"stdio.h"
+	<time.h>
+	"exec.h"
+
+1470261935 /home/wilson/github archivos/MIA201314158/[MIA]201314158/exec.h
+	<stdio.h>
+
